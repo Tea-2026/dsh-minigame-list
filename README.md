@@ -52,9 +52,13 @@ dsh plugin add "C:\path\to\dsh-minigame-list"
 
 ### 通过插件市场
 
-插件市场是 DSH 的 JSON 索引。把本仓库的 `market/index.json` 放到任意静态主机（例如 GitHub Pages），在 **插件 → 发现 → 添加索引源** 里填入它的 URL 即可。
+插件市场是 DSH 的 JSON 索引。在 **插件 → 发现 → 添加索引源** 里填入：
 
-索引里的版本指向本仓库的某个提交；发布新版本后更新 `commit` 和 `version` 即可。
+```
+https://raw.githubusercontent.com/Tea-2026/dsh-minigame-list/main/market/index.json
+```
+
+索引里的版本指向本仓库的某个提交；发布新版本后更新 `market/index.json` 里的 `commit` 和 `version` 即可。
 
 ## 结构
 
