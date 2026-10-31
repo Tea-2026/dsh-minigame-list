@@ -233,7 +233,7 @@ window.__ModuleLoader__.load({
       breakout: 'Breakout',
     };
 
-    const MENU = { w: 300, h: 360 };
+    const MENU = { w: 330, h: 420 };
     const SNAKE_COLS = 20;
     const SNAKE_ROWS = 15;
     const BEST_KEY = 'dsh-minigame-list.snake.best';
@@ -436,7 +436,6 @@ window.__ModuleLoader__.load({
       '.mg-view{position:absolute;inset:0;display:flex;flex-direction:column;box-sizing:border-box;overflow:auto;overscroll-behavior:contain;opacity:1;transform:none;transition:opacity .16s ease,transform .22s cubic-bezier(.16,1,.3,1)}',
       '.mg-view[data-active="false"]{opacity:0;transform:scale(.97);pointer-events:none}',
       '.mg-view[data-active="true"]{transition-delay:.1s}',
-      '.mg-menu{padding:14px 12px 12px}',
       '.mg-game{padding:12px;overflow:hidden;display:flex;flex-direction:column;gap:8px}',
       '.mg-gamebar{flex:none;display:flex;align-items:center;justify-content:space-between;gap:8px;height:20px;padding:0 2px;font-size:11px;color:var(--dsw-alias-label-secondary)}',
       '.mg-gamebar-state{display:inline-flex;align-items:center;gap:6px;min-width:0}',
@@ -448,26 +447,34 @@ window.__ModuleLoader__.load({
       '.mg-gamebar-pill{flex:none;padding:1px 7px;border-radius:999px;background:color-mix(in srgb, var(--dsw-alias-label-primary) 7%, transparent);font-size:10px;line-height:1.6;color:var(--dsw-alias-label-secondary)}',
       '.mg-gamebar-pill[data-auto="true"]{background:color-mix(in srgb, var(--dsw-alias-state-warn-primary) 20%, transparent);color:var(--dsw-alias-label-primary)}',
       /* Menu */
-      '.mg-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:0 4px 12px}',
-      '.mg-title{margin:0;font-size:14px;font-weight:600;line-height:1.3;letter-spacing:.01em}',
-      '.mg-sub{margin:4px 0 0;font-size:11.5px;line-height:1.45;color:var(--dsw-alias-label-secondary)}',
-      '.mg-wait{display:inline-flex;align-items:center;gap:5px}',
-      '.mg-dot{width:6px;height:6px;border-radius:50%;background:var(--dsw-alias-state-success-primary);animation:mg-pulse 1.4s ease-out infinite}',
-      '@keyframes mg-pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb, var(--dsw-alias-state-success-primary) 55%, transparent)}70%{box-shadow:0 0 0 5px transparent}100%{box-shadow:0 0 0 0 transparent}}',
-      '.mg-close{flex:none;display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border:0;border-radius:9px;background:transparent;color:var(--dsw-alias-label-secondary);cursor:pointer;transition:background .15s ease,color .15s ease}',
-      '.mg-close:hover{background:color-mix(in srgb, var(--dsw-alias-label-primary) 8%, transparent);color:var(--dsw-alias-label-primary)}',
-      '.mg-close:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:1px}',
-      '.mg-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}',
-      '.mg-card{display:flex;align-items:center;gap:9px;min-width:0;padding:8px 9px;border-radius:14px;border:1px solid color-mix(in srgb, var(--dsw-alias-label-primary) 8%, transparent);background:color-mix(in srgb, var(--dsw-alias-label-primary) 4.5%, transparent);font:inherit;color:inherit;text-align:left;cursor:pointer;opacity:0;transform:translateY(12px) scale(.97);transition:opacity .3s ease var(--mg-delay,0ms),transform .36s cubic-bezier(.16,1,.3,1) var(--mg-delay,0ms),background-color .15s ease,border-color .15s ease;-webkit-tap-highlight-color:transparent}',
+      '.mg-menu{position:relative;overflow:hidden;background:#0a0c0e;color:#e7eaee}',
+      '.mg-field{position:absolute;inset:0;display:block;width:100%;height:100%;pointer-events:none;z-index:0}',
+      '.mg-menu-inner{position:relative;z-index:1;display:flex;flex-direction:column;gap:10px;height:100%;box-sizing:border-box;padding:14px 14px 12px}',
+      '.mg-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:0}',
+      '.mg-head-main{min-width:0}',
+      '.mg-kicker{display:block;font:600 8px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.32em;color:#77818b}',
+      '.mg-title{display:flex;align-items:center;gap:8px;margin:6px 0 0;font-size:26px;line-height:1.05;letter-spacing:-.01em;font-weight:800;color:#f4f6f8}',
+      '.mg-title::after{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:#d0ff42}',
+      '.mg-sub{margin:6px 0 0;font:500 9px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.1em;color:#8a949e}',
+      '.mg-wait{display:inline-flex;align-items:center;gap:6px;color:#d0ff42}',
+      '.mg-dot{width:5px;height:5px;border-radius:50%;background:#d0ff42;animation:mg-pulse 1.4s ease-out infinite}',
+      '@keyframes mg-pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,#d0ff42 55%, transparent)}70%{box-shadow:0 0 0 5px transparent}100%{box-shadow:0 0 0 0 transparent}}',
+      '.mg-close{flex:none;display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;padding:0;border:1px solid rgba(255,255,255,.18);border-radius:7px;background:transparent;color:#c3cbd3;cursor:pointer;transition:background .12s ease,border-color .12s ease,color .12s ease}',
+      '.mg-close:hover{background:#d0ff42;border-color:#d0ff42;color:#0a0c0e}',
+      '.mg-close:focus-visible{outline:2px solid #d0ff42;outline-offset:2px}',
+      '.mg-grid{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:6px}',
+      '.mg-card{position:relative;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;min-width:0;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.14);background:rgba(10,12,14,.8);color:#dbe1e7;cursor:pointer;text-align:left;opacity:0;transform:translateY(6px);transition:opacity .22s ease,transform .26s cubic-bezier(.16,1,.3,1),border-color .14s ease,background .14s ease,color .14s ease}',
       '.mg-panel[data-shown="true"] .mg-card{opacity:1;transform:none}',
-      '.mg-card:hover{background:color-mix(in srgb, var(--dsw-alias-label-primary) 8%, transparent);border-color:color-mix(in srgb, var(--dsw-alias-label-primary) 16%, transparent)}',
-      '.mg-card:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:2px}',
-      '.mg-icon{flex:none;display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:10px;background:color-mix(in srgb, var(--dsw-alias-label-primary) 7%, transparent);color:var(--dsw-alias-label-secondary)}',
-      '.mg-icon svg{display:block}',
-      '.mg-cardtext{min-width:0;display:flex;flex-direction:column;gap:1px}',
-      '.mg-name{font-size:12.5px;font-weight:500;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
-      '.mg-tag{font-size:10px;line-height:1.3;color:var(--dsw-alias-label-secondary);opacity:.9;white-space:nowrap}',
-      '.mg-tag-live{color:var(--dsw-alias-state-success-primary);opacity:1}',
+      '.mg-card:hover{border-color:#d0ff42;background:#141a10;color:#f4f6f8}',
+      '.mg-card:active{transform:scale(.98)}',
+      '.mg-card:focus-visible{outline:2px solid #d0ff42;outline-offset:2px}',
+      '.mg-index{font:600 8px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.12em;color:#6d7781}',
+      '.mg-card:hover .mg-index{color:#d0ff42}',
+      '.mg-icon{display:inline-flex;align-items:center;justify-content:center;color:#aeb7c0;margin:2px 0}',
+      '.mg-icon svg{display:block;width:18px;height:18px}',
+      '.mg-card:hover .mg-icon{color:#d0ff42}',
+      '.mg-name{font-size:10.5px;line-height:1.2;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}',
+      '.mg-foot{flex:none;display:flex;align-items:center;justify-content:space-between;font:500 8px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.14em;color:#5f6872}',
       /* Stage */
       '.mg-stage{position:relative;flex:1 1 auto;min-height:0;width:100%;border-radius:14px;overflow:hidden;background:color-mix(in srgb, var(--dsw-alias-label-primary) 3%, transparent)}',
       '.mg-stage-grid{position:absolute;inset:0;background-image:linear-gradient(color-mix(in srgb, var(--dsw-alias-label-primary) 6%, transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb, var(--dsw-alias-label-primary) 6%, transparent) 1px,transparent 1px);background-size:24px 24px}',
@@ -4079,6 +4086,89 @@ window.__ModuleLoader__.load({
       );
     }
 
+    function MenuField(props) {
+      const { active } = props;
+      const ref = useRef(null);
+
+      useEffect(() => {
+        const canvas = ref.current;
+        if (!canvas) return undefined;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return undefined;
+
+        let raf = 0;
+        let width = 0;
+        let height = 0;
+        const pointer = { x: -999, y: -999, tx: -999, ty: -999 };
+
+        const resize = () => {
+          const rect = canvas.getBoundingClientRect();
+          const dpr = window.devicePixelRatio || 1;
+          width = rect.width;
+          height = rect.height;
+          canvas.width = Math.max(1, Math.round(width * dpr));
+          canvas.height = Math.max(1, Math.round(height * dpr));
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        };
+        resize();
+        const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(resize) : null;
+        if (observer) observer.observe(canvas);
+
+        const onMove = (event) => {
+          const rect = canvas.getBoundingClientRect();
+          const x = event.clientX - rect.left;
+          const y = event.clientY - rect.top;
+          if (x < -48 || y < -48 || x > rect.width + 48 || y > rect.height + 48) {
+            pointer.tx = -999;
+            pointer.ty = -999;
+          } else {
+            pointer.tx = x;
+            pointer.ty = y;
+          }
+        };
+        window.addEventListener('pointermove', onMove, { passive: true });
+
+        const reduce = Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+        const draw = () => {
+          raf = window.requestAnimationFrame(draw);
+          if (!active || !width || !height) return;
+          pointer.x += (pointer.tx - pointer.x) * 0.16;
+          pointer.y += (pointer.ty - pointer.y) * 0.16;
+          ctx.clearRect(0, 0, width, height);
+          const pitch = 13;
+          const time = reduce ? 0 : performance.now() / 1000;
+          for (let y = pitch / 2; y < height; y += pitch) {
+            for (let x = pitch / 2; x < width; x += pitch) {
+              const dx = x - pointer.x;
+              const dy = y - pointer.y;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              const near = Math.max(0, 1 - dist / 66);
+              const pulse = reduce ? 0.5 : 0.5 + 0.5 * Math.sin(time * 1.7 + (x + y) * 0.06);
+              const radius = 1 + near * 2.4 + pulse * 0.3;
+              const push = near * 3.4;
+              const ox = dist > 0.01 ? (dx / dist) * push : 0;
+              const oy = dist > 0.01 ? (dy / dist) * push : 0;
+              ctx.fillStyle = near > 0.02
+                ? 'rgba(208,255,66,' + (0.2 + near * 0.72).toFixed(3) + ')'
+                : 'rgba(255,255,255,' + (0.1 + pulse * 0.06).toFixed(3) + ')';
+              ctx.beginPath();
+              ctx.arc(x + ox, y + oy, radius, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
+        };
+        raf = window.requestAnimationFrame(draw);
+        return () => {
+          window.cancelAnimationFrame(raf);
+          window.removeEventListener('pointermove', onMove);
+          if (observer) observer.disconnect();
+        };
+      }, [active]);
+
+      return h('canvas', { ref, className: 'mg-field', 'aria-hidden': 'true' });
+    }
+
     function MiniGameLauncher(props) {
       const t = props.t;
       const useStatus = props.useSessionStatus || useNoStatus;
@@ -4276,42 +4366,48 @@ window.__ModuleLoader__.load({
               'aria-hidden': inGame ? 'true' : 'false',
               inert: inGame ? '' : undefined,
             },
-              h('header', { className: 'mg-head' },
-                h('div', null,
-                  h('h2', { className: 'mg-title' }, t('title')),
-                  h('p', { className: 'mg-sub' },
-                    running
-                      ? h('span', { className: 'mg-wait' },
-                        h('span', { className: 'mg-dot', 'aria-hidden': 'true' }),
-                        t('waiting'))
-                      : t('subtitle'),
+              h(MenuField, { active: open && !inGame }),
+              h('div', { className: 'mg-menu-inner' },
+                h('header', { className: 'mg-head' },
+                  h('div', { className: 'mg-head-main' },
+                    h('span', { className: 'mg-kicker' }, 'DSH // ARCADE'),
+                    h('h2', { className: 'mg-title' }, t('title')),
+                    h('p', { className: 'mg-sub' },
+                      running
+                        ? h('span', { className: 'mg-wait' },
+                          h('span', { className: 'mg-dot', 'aria-hidden': 'true' }),
+                          t('waiting'))
+                        : t('subtitle'),
+                    ),
+                  ),
+                  h('button', {
+                    type: 'button',
+                    className: 'mg-close',
+                    'aria-label': t('close'),
+                    onClick: () => closePanel(true),
+                  },
+                    h(CloseGlyph, { size: 14 }),
                   ),
                 ),
-                h('button', {
-                  type: 'button',
-                  className: 'mg-close',
-                  'aria-label': t('close'),
-                  onClick: () => closePanel(true),
-                },
-                  h(CloseGlyph, { size: 16 }),
-                ),
-              ),
-              h('div', { className: 'mg-grid' },
-                GAMES.map((item, index) => h('button', {
-                  key: item.id,
-                  type: 'button',
-                  className: 'mg-card',
-                  title: t(item.id) + ' · ' + t(item.live ? 'play' : 'tag'),
-                  style: { '--mg-delay': (40 + index * 28) + 'ms' },
-                  onClick: () => enterGame(item.id),
-                },
-                  h('span', { className: 'mg-icon' }, h(item.Icon)),
-                  h('span', { className: 'mg-cardtext' },
+                h('div', { className: 'mg-grid' },
+                  GAMES.map((item, index) => h('button', {
+                    key: item.id,
+                    type: 'button',
+                    className: 'mg-card',
+                    title: t(item.id),
+                    style: { '--mg-delay': (40 + index * 28) + 'ms' },
+                    onClick: () => enterGame(item.id),
+                  },
+                    h('span', { className: 'mg-index' }, ('0' + (index + 1)).slice(-2)),
+                    h('span', { className: 'mg-icon' }, h(item.Icon)),
                     h('span', { className: 'mg-name' }, t(item.id)),
-                    h('span', { className: 'mg-tag' + (item.live ? ' mg-tag-live' : '') },
-                      t(item.live ? 'play' : 'tag')),
-                  ),
-                )),
+                  )),
+                ),
+                h('div', { className: 'mg-foot' },
+                  h('span', null, 'P PAUSE'),
+                  h('span', null, 'ESC CLOSE'),
+                  h('span', null, '09 MODULES'),
+                ),
               ),
             ),
             h('div', {
