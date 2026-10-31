@@ -1,0 +1,37 @@
+{
+  "format": 1,
+  "title": {
+    "en": "Tea minigames",
+    "zh": "小游戏面板"
+  },
+  "plugins": [
+    {
+      "name": "dsh-minigame-list",
+      "title": {
+        "en": "DSH Minigame List",
+        "zh": "DSH 小游戏面板"
+      },
+      "description": {
+        "en": "Nine playable minigames in the Harness overlay for the boring wait while the model replies. Auto-pauses when the reply lands, keeps progress when the panel closes.",
+        "zh": "等模型回复的几十秒别干瞪眼：Harness 右下角的九款小游戏。回复一到自动暂停，收起面板不丢进度。"
+      },
+      "icon": "icons/icon.svg",
+      "author": "Tea-2026",
+      "homepage": "https://github.com/Tea-2026/dsh-minigame-list#readme",
+      "repository": {
+        "url": "https://github.com/Tea-2026/dsh-minigame-list"
+      },
+      "versions": [
+        {
+          "version": "0.1.0",
+          "publishTimestamp": 1793471702,
+          "source": {
+            "type": "git",
+            "url": "https://github.com/Tea-2026/dsh-minigame-list",
+            "commit": "34d39248966e55fd50b5b24bf71684c6e8f923cd"
+          }
+        }
+      ]
+    }
+  ]
+}
