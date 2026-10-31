@@ -17,7 +17,20 @@ window.__ModuleLoader__.load({
 
     const zh = {
       open: '打开小游戏',
-      close: '关闭小游戏',
+      close: '关闭',
+      settingsTitle: '主题',
+      themeColor: '主题色',
+      custom: '自定义',
+      gradient: '渐变',
+      advanced: '高级渐变',
+      gradientHint: '同一颜色的明暗渐变',
+      texture: '纹理',
+      textureColor: '纹理色',
+      texNone: '无',
+      texDots: '网点',
+      texContour: '等高线',
+      texGrid: '网格',
+      resetTheme: '恢复默认',
       title: '小游戏',
       subtitle: '等回复的时候，玩点什么',
       waiting: '等待回复中…',
@@ -126,7 +139,20 @@ window.__ModuleLoader__.load({
 
     const en = {
       open: 'Open mini games',
-      close: 'Close mini games',
+      close: 'Close',
+      settingsTitle: 'Theme',
+      themeColor: 'Theme color',
+      custom: 'Custom',
+      gradient: 'Gradient',
+      advanced: 'Advanced',
+      gradientHint: 'Same hue, darker shade',
+      texture: 'Texture',
+      textureColor: 'Texture color',
+      texNone: 'None',
+      texDots: 'Dots',
+      texContour: 'Contours',
+      texGrid: 'Grid',
+      resetTheme: 'Reset',
       title: 'Mini games',
       subtitle: 'Something to play while you wait',
       waiting: 'Waiting for a reply…',
@@ -453,27 +479,61 @@ window.__ModuleLoader__.load({
       '.mg-head-main{min-width:0}',
       '.mg-kicker{display:block;font:600 8px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.32em;color:#8b929c}',
       '.mg-title{display:flex;align-items:center;gap:8px;margin:6px 0 0;font-size:26px;line-height:1.05;letter-spacing:-.01em;font-weight:800;color:#0f1115}',
-      '.mg-title::after{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:#0f1115}',
+      '.mg-title::after{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--mg-accent,#0f1115)}',
       '.mg-sub{margin:6px 0 0;font:500 9px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.1em;color:#8b929c}',
       '.mg-wait{display:inline-flex;align-items:center;gap:6px;color:#15803d}',
       '.mg-dot{width:5px;height:5px;border-radius:50%;background:#16a34a;animation:mg-pulse 1.4s ease-out infinite}',
       '@keyframes mg-pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,#16a34a 45%, transparent)}70%{box-shadow:0 0 0 5px transparent}100%{box-shadow:0 0 0 0 transparent}}',
       '.mg-close{flex:none;display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;padding:0;border:1px solid #dcdfe4;border-radius:7px;background:#ffffff;color:#0f1115;cursor:pointer;transition:background .12s ease,border-color .12s ease,color .12s ease}',
-      '.mg-close:hover{background:#0f1115;border-color:#0f1115;color:#ffffff}',
-      '.mg-close:focus-visible{outline:2px solid #0f1115;outline-offset:2px}',
+      '.mg-close:hover{background:var(--mg-accent,#0f1115);border-color:var(--mg-accent,#0f1115);color:#ffffff}',
+      '.mg-close:focus-visible{outline:2px solid var(--mg-accent,#0f1115);outline-offset:2px}',
       '.mg-grid{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:6px}',
       '.mg-card{position:relative;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;min-width:0;padding:8px;border-radius:8px;border:1px solid #e6e8ec;background:#ffffff;color:#111827;cursor:pointer;text-align:left;opacity:0;transform:translateY(6px);transition:opacity .22s ease var(--mg-delay,0ms),transform .26s cubic-bezier(.16,1,.3,1) var(--mg-delay,0ms),border-color .14s ease,background .14s ease,color .14s ease}',
       '.mg-panel[data-shown="true"] .mg-card{opacity:1;transform:none}',
-      '.mg-card:hover{border-color:#0f1115;background:#f8f9fa;color:#0f1115}',
+      '.mg-card:hover{border-color:var(--mg-accent,#0f1115);background:color-mix(in srgb,var(--mg-accent,#0f1115) 6%,#ffffff);color:#0f1115}',
       '.mg-card:active{transform:scale(.98)}',
-      '.mg-card:focus-visible{outline:2px solid #0f1115;outline-offset:2px}',
+      '.mg-card:focus-visible{outline:2px solid var(--mg-accent,#0f1115);outline-offset:2px}',
       '.mg-index{font:600 8px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.12em;color:#a0a7b1}',
-      '.mg-card:hover .mg-index{color:#0f1115}',
+      '.mg-card:hover .mg-index{color:var(--mg-accent,#0f1115)}',
       '.mg-icon{display:inline-flex;align-items:center;justify-content:center;color:#4b5563;margin:2px 0}',
       '.mg-icon svg{display:block;width:18px;height:18px}',
-      '.mg-card:hover .mg-icon{color:#0f1115}',
+      '.mg-card:hover .mg-icon{color:var(--mg-accent,#0f1115)}',
       '.mg-name{font-size:10.5px;line-height:1.2;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}',
       '.mg-foot{flex:none;display:flex;align-items:center;justify-content:space-between;font:500 8px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.14em;color:#a0a7b1}',
+      /* Theme settings */
+      '.mg-settings{overflow:hidden;background:#ffffff;color:#0f1115}',
+      '.mg-set-inner{position:relative;z-index:1;display:flex;flex-direction:column;gap:10px;height:100%;box-sizing:border-box;padding:14px}',
+      '.mg-set-head{display:flex;align-items:center;gap:8px;padding:0}',
+      '.mg-set-back{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;padding:0;border:1px solid #dcdfe4;border-radius:7px;background:#ffffff;color:#0f1115;cursor:pointer}',
+      '.mg-set-back:hover{background:#0f1115;border-color:#0f1115;color:#ffffff}',
+      '.mg-set-title{margin:0;flex:1;font-size:15px;font-weight:700}',
+      '.mg-set-kicker{font:600 8px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.3em;color:#8b929c}',
+      '.mg-set-body{flex:1 1 auto;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:12px;padding-right:2px}',
+      '.mg-set-sec{display:flex;flex-direction:column;gap:6px}',
+      '.mg-set-label{font:600 8px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.18em;color:#8b929c}',
+      '.mg-swatches{display:flex;flex-wrap:wrap;gap:6px}',
+      '.mg-swatch{width:20px;height:20px;padding:0;border:1px solid rgba(15,17,21,.16);border-radius:6px;cursor:pointer}',
+      '.mg-swatch-on{outline:2px solid #0f1115;outline-offset:2px}',
+      '.mg-swatch-wide{width:34px}',
+      '.mg-set-custom{display:flex;align-items:center;gap:6px;font:500 9px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#8b929c}',
+      '.mg-set-custom input[type="color"],.mg-set-colors input[type="color"]{width:24px;height:20px;padding:0;border:1px solid #dcdfe4;border-radius:5px;background:#ffffff}',
+      '.mg-set-toggle{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;color:#0f1115;cursor:pointer}',
+      '.mg-set-toggle input{accent-color:var(--mg-accent,#0f1115)}',
+      '.mg-set-colors{display:flex;gap:12px}',
+      '.mg-set-colors label{display:flex;align-items:center;gap:5px;font:500 9px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#8b929c}',
+      '.mg-set-hint{font:500 9px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#8b929c}',
+      '.mg-seg{display:flex;gap:4px}',
+      '.mg-seg-btn{flex:1;height:24px;padding:0;border:1px solid #dcdfe4;border-radius:6px;background:#ffffff;font-size:9.5px;color:#4b5563;cursor:pointer}',
+      '.mg-seg-on{background:#0f1115;border-color:#0f1115;color:#ffffff}',
+      '.mg-set-reset{align-self:flex-start;height:26px;padding:0 10px;border:1px solid #dcdfe4;border-radius:6px;background:#ffffff;font-size:10px;color:#0f1115;cursor:pointer}',
+      '.mg-set-reset:hover{background:#f8f9fa}',
+      /* Dock texture */
+      '.mg-dock::before{content:"";position:absolute;inset:-60%;pointer-events:none;opacity:.45;background-repeat:repeat;animation:mg-drift 18s linear infinite}',
+      '.mg-dock[data-texture="none"]::before{display:none}',
+      '.mg-dock[data-texture="dots"]::before{background-image:radial-gradient(circle,var(--mg-tex,#ffffff) 1px,transparent 1.4px);background-size:7px 7px;transform:perspective(50px) rotateX(52deg) scale(1.5)}',
+      '.mg-dock[data-texture="contour"]::before{background-image:repeating-radial-gradient(circle at 35% 40%,transparent 0 5px,var(--mg-tex,#ffffff) 6px,transparent 7px);background-size:140px 140px}',
+      '.mg-dock[data-texture="grid"]::before{background-image:linear-gradient(var(--mg-tex,#ffffff) 1px,transparent 1px),linear-gradient(90deg,var(--mg-tex,#ffffff) 1px,transparent 1px);background-size:10px 10px;transform:perspective(60px) rotateX(55deg) scale(1.4)}',
+      '@keyframes mg-drift{from{background-position:0 0}to{background-position:0 -70px}}',
       /* Stage */
       '.mg-stage{position:relative;flex:1 1 auto;min-height:0;width:100%;border-radius:14px;overflow:hidden;background:color-mix(in srgb, var(--dsw-alias-label-primary) 3%, transparent)}',
       '.mg-stage-grid{position:absolute;inset:0;background-image:linear-gradient(color-mix(in srgb, var(--dsw-alias-label-primary) 6%, transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb, var(--dsw-alias-label-primary) 6%, transparent) 1px,transparent 1px);background-size:24px 24px}',
@@ -4085,6 +4145,68 @@ window.__ModuleLoader__.load({
       );
     }
 
+    const THEME_KEY = 'dsh-minigame-list.theme';
+    const THEME_PRESETS = ['#0f1115', '#1e3a5f', '#14532d', '#7f1d1d', '#4c1d95', '#9a3412', '#155e75', '#334155'];
+    const GRADIENT_PRESETS = [['#0f1115', '#14532d'], ['#1e3a5f', '#0e7490'], ['#4c1d95', '#be185d'], ['#7f1d1d', '#b45309']];
+    const THEME_DEFAULTS = {
+      theme: '#0f1115', gradient: false, advanced: false, from: '#0f1115', to: '#14532d', texture: 'none', texColor: '#ffffff',
+    };
+
+    function mgThemeRead() {
+      try {
+        const raw = JSON.parse(window.localStorage.getItem(THEME_KEY));
+        return raw && typeof raw === 'object' ? Object.assign({}, THEME_DEFAULTS, raw) : Object.assign({}, THEME_DEFAULTS);
+      } catch (error) {
+        return Object.assign({}, THEME_DEFAULTS);
+      }
+    }
+
+    function mgThemeWrite(value) {
+      try {
+        window.localStorage.setItem(THEME_KEY, JSON.stringify(value));
+      } catch (error) {
+        /* storage unavailable */
+      }
+    }
+
+    function mgHexParts(hex) {
+      const raw = String(hex).replace('#', '');
+      const full = raw.length === 3 ? raw.split('').map((c) => c + c).join('') : raw;
+      if (full.length !== 6) return [15, 17, 21];
+      return [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16));
+    }
+
+    function mgLum(hex) {
+      const [r, g, b] = mgHexParts(hex).map((v) => {
+        const c = v / 255;
+        return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+      });
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    }
+
+    function mgOnColor(hex) {
+      return mgLum(hex) > 0.42 ? '#0b0d10' : '#ffffff';
+    }
+
+    function mgDarken(hex, factor) {
+      const parts = mgHexParts(hex).map((v) => Math.round(Math.min(255, v * factor)));
+      return 'rgb(' + parts.join(',') + ')';
+    }
+
+    function SettingsGlyph(props) {
+      const size = props.size || 14;
+      return h('svg', {
+        width: size, height: size, viewBox: '0 0 24 24', fill: 'none',
+        stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round',
+        'aria-hidden': true, focusable: false,
+      },
+        h('path', { d: 'M3 6.5h18M3 12h18M3 17.5h18' }),
+        h('circle', { cx: 8, cy: 6.5, r: 2.1, fill: '#ffffff' }),
+        h('circle', { cx: 16, cy: 12, r: 2.1, fill: '#ffffff' }),
+        h('circle', { cx: 10, cy: 17.5, r: 2.1, fill: '#ffffff' }),
+      );
+    }
+
     function MiniGameLauncher(props) {
       const t = props.t;
       const useStatus = props.useSessionStatus || useNoStatus;
@@ -4096,6 +4218,8 @@ window.__ModuleLoader__.load({
       const [open, setOpen] = useState(false);
       const [shown, setShown] = useState(false);
       const [closing, setClosing] = useState(false);
+      const [settings, setSettings] = useState(false);
+      const [theme, setTheme] = useState(mgThemeRead);
       const closeTimer = useRef(0);
       const [gameId, setGameId] = useState(null);
       const [paused, setPaused] = useState(false);
@@ -4114,6 +4238,17 @@ window.__ModuleLoader__.load({
       const frame = game && game.Game && frameOverride ? frameOverride : gameFrame(game);
       const inGame = Boolean(game);
       const consoleMode = open && inGame;
+      const saveTheme = (patch) => {
+        setTheme((prev) => {
+          const next = Object.assign({}, prev, patch);
+          mgThemeWrite(next);
+          return next;
+        });
+      };
+      const dockFrom = theme.advanced && theme.gradient ? theme.from : theme.theme;
+      const dockTo = theme.advanced && theme.gradient ? theme.to : mgDarken(theme.theme, 0.55);
+      const dockBg = theme.gradient ? 'linear-gradient(145deg,' + dockFrom + ',' + dockTo + ')' : theme.theme;
+      const dockFg = mgOnColor(dockFrom);
 
       /* Turn start pops the menu open; turn end pauses whatever game is open. */
       useEffect(() => {
@@ -4203,6 +4338,7 @@ window.__ModuleLoader__.load({
       }, [open, closePanel]);
 
       const enterGame = useCallback((id) => {
+        setSettings(false);
         setGameId(id);
         setPaused(false);
         setPauseReason('');
@@ -4274,13 +4410,13 @@ window.__ModuleLoader__.load({
           inert: open ? undefined : '',
           role: 'dialog',
           'aria-label': inGame ? t(game.id) : t('title'),
-          style: { width: frame.w + 'px', height: frame.h + 'px' },
+          style: { width: frame.w + 'px', height: frame.h + 'px', '--mg-accent': theme.theme },
         },
             h('div', {
               className: 'mg-view mg-menu',
-              'data-active': inGame ? 'false' : 'true',
-              'aria-hidden': inGame ? 'true' : 'false',
-              inert: inGame ? '' : undefined,
+              'data-active': !inGame && !settings ? 'true' : 'false',
+              'aria-hidden': !inGame && !settings ? 'false' : 'true',
+              inert: !inGame && !settings ? undefined : '',
             },
               h('div', { className: 'mg-menu-inner' },
                 h('header', { className: 'mg-head' },
@@ -4298,10 +4434,11 @@ window.__ModuleLoader__.load({
                   h('button', {
                     type: 'button',
                     className: 'mg-close',
-                    'aria-label': t('close'),
-                    onClick: () => closePanel(true),
+                    'aria-label': t('settingsTitle'),
+                    title: t('settingsTitle'),
+                    onClick: () => setSettings(true),
                   },
-                    h(CloseGlyph, { size: 14 }),
+                    h(SettingsGlyph, { size: 14 }),
                   ),
                 ),
                 h('div', { className: 'mg-grid' },
@@ -4326,6 +4463,124 @@ window.__ModuleLoader__.load({
               ),
             ),
             h('div', {
+              className: 'mg-view mg-settings',
+              'data-active': settings && !inGame ? 'true' : 'false',
+              'aria-hidden': settings && !inGame ? 'false' : 'true',
+              inert: settings && !inGame ? undefined : '',
+            },
+              h('div', { className: 'mg-set-inner' },
+                h('header', { className: 'mg-set-head' },
+                  h('button', {
+                    type: 'button', className: 'mg-set-back', 'aria-label': t('back'),
+                    onClick: () => setSettings(false),
+                  }, h(BackGlyph, { size: 14 })),
+                  h('h2', { className: 'mg-set-title' }, t('settingsTitle')),
+                  h('span', { className: 'mg-set-kicker' }, 'THEME'),
+                ),
+                h('div', { className: 'mg-set-body' },
+                  h('section', { className: 'mg-set-sec' },
+                    h('div', { className: 'mg-set-label' }, t('themeColor')),
+                    h('div', { className: 'mg-swatches' },
+                      THEME_PRESETS.map((color) => h('button', {
+                        key: color,
+                        type: 'button',
+                        className: 'mg-swatch' + (theme.theme === color ? ' mg-swatch-on' : ''),
+                        style: { background: color },
+                        'aria-label': color,
+                        onClick: () => saveTheme({ theme: color }),
+                      })),
+                    ),
+                    h('label', { className: 'mg-set-custom' },
+                      h('span', null, t('custom')),
+                      h('input', {
+                        type: 'color', value: theme.theme, 'aria-label': t('custom'),
+                        onChange: (event) => saveTheme({ theme: event.target.value }),
+                      }),
+                    ),
+                  ),
+                  h('section', { className: 'mg-set-sec' },
+                    h('label', { className: 'mg-set-toggle' },
+                      h('span', null, t('gradient')),
+                      h('input', {
+                        type: 'checkbox', checked: theme.gradient,
+                        onChange: (event) => saveTheme({ gradient: event.target.checked }),
+                      }),
+                    ),
+                    theme.gradient
+                      ? h('label', { className: 'mg-set-toggle' },
+                        h('span', null, t('advanced')),
+                        h('input', {
+                          type: 'checkbox', checked: theme.advanced,
+                          onChange: (event) => saveTheme({ advanced: event.target.checked }),
+                        }),
+                      )
+                      : null,
+                    theme.gradient
+                      ? h('div', { className: 'mg-swatches' },
+                        GRADIENT_PRESETS.map((pair) => h('button', {
+                          key: pair[0] + pair[1],
+                          type: 'button',
+                          className: 'mg-swatch mg-swatch-wide',
+                          style: { background: 'linear-gradient(135deg,' + pair[0] + ',' + pair[1] + ')' },
+                          'aria-label': pair.join(' '),
+                          onClick: () => saveTheme({ advanced: true, from: pair[0], to: pair[1] }),
+                        })),
+                      )
+                      : null,
+                    theme.gradient && theme.advanced
+                      ? h('div', { className: 'mg-set-colors' },
+                        h('label', null,
+                          h('span', null, 'FROM'),
+                          h('input', {
+                            type: 'color', value: theme.from, 'aria-label': 'from',
+                            onChange: (event) => saveTheme({ from: event.target.value }),
+                          }),
+                        ),
+                        h('label', null,
+                          h('span', null, 'TO'),
+                          h('input', {
+                            type: 'color', value: theme.to, 'aria-label': 'to',
+                            onChange: (event) => saveTheme({ to: event.target.value }),
+                          }),
+                        ),
+                      )
+                      : null,
+                    theme.gradient && !theme.advanced
+                      ? h('div', { className: 'mg-set-hint' }, t('gradientHint'))
+                      : null,
+                  ),
+                  h('section', { className: 'mg-set-sec' },
+                    h('div', { className: 'mg-set-label' }, t('texture')),
+                    h('div', { className: 'mg-seg' },
+                      [['none', t('texNone')], ['dots', t('texDots')], ['contour', t('texContour')], ['grid', t('texGrid')]]
+                        .map(([id, label]) => h('button', {
+                          key: id,
+                          type: 'button',
+                          className: 'mg-seg-btn' + (theme.texture === id ? ' mg-seg-on' : ''),
+                          onClick: () => saveTheme({ texture: id }),
+                        }, label)),
+                    ),
+                    theme.texture !== 'none'
+                      ? h('label', { className: 'mg-set-custom' },
+                        h('span', null, t('textureColor')),
+                        h('input', {
+                          type: 'color', value: theme.texColor, 'aria-label': t('textureColor'),
+                          onChange: (event) => saveTheme({ texColor: event.target.value }),
+                        }),
+                      )
+                      : null,
+                  ),
+                  h('button', {
+                    type: 'button', className: 'mg-set-reset',
+                    onClick: () => {
+                      mgThemeWrite(THEME_DEFAULTS);
+                      setTheme(Object.assign({}, THEME_DEFAULTS));
+                    },
+                  }, t('resetTheme')),
+                ),
+              ),
+            ),
+            h('div', {
               className: 'mg-view mg-game',
               'data-active': inGame ? 'true' : 'false',
               'aria-hidden': inGame ? 'false' : 'true',
@@ -4341,7 +4596,13 @@ window.__ModuleLoader__.load({
         h('div', {
           className: 'mg-dock',
           'data-mode': closing ? 'menu' : (consoleMode ? 'game' : 'menu'),
-          style: { width: closing ? '50px' : (consoleMode ? frame.w + 'px' : '50px') },
+          'data-texture': theme.texture,
+          style: {
+            width: closing ? '50px' : (consoleMode ? frame.w + 'px' : '50px'),
+            background: dockBg,
+            color: dockFg,
+            '--mg-tex': theme.texColor,
+          },
         },
           h('button', {
             ref: buttonRef,
