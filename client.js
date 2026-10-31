@@ -4089,6 +4089,8 @@ window.__ModuleLoader__.load({
 
       const [open, setOpen] = useState(false);
       const [shown, setShown] = useState(false);
+      const [closing, setClosing] = useState(false);
+      const closeTimer = useRef(0);
       const [gameId, setGameId] = useState(null);
       const [paused, setPaused] = useState(false);
       const [pauseReason, setPauseReason] = useState('');
@@ -4151,13 +4153,24 @@ window.__ModuleLoader__.load({
       }, [note]);
 
       const closePanel = useCallback((restoreFocus) => {
-        setOpen(false);
-        if (gameId) {
-          setPaused(true);
-          setPauseReason('hidden');
-        }
-        if (restoreFocus && buttonRef.current) buttonRef.current.focus();
-      }, [gameId]);
+        if (!open || closing) return;
+        setClosing(true);
+        setShown(false);
+        if (closeTimer.current) window.clearTimeout(closeTimer.current);
+        closeTimer.current = window.setTimeout(() => {
+          setOpen(false);
+          setClosing(false);
+          if (gameId) {
+            setPaused(true);
+            setPauseReason('hidden');
+          }
+          if (restoreFocus && buttonRef.current) buttonRef.current.focus();
+        }, 320);
+      }, [open, closing, gameId]);
+
+      useEffect(() => () => {
+        if (closeTimer.current) window.clearTimeout(closeTimer.current);
+      }, []);
 
       useEffect(() => {
         if (!open) return undefined;
@@ -4316,8 +4329,8 @@ window.__ModuleLoader__.load({
         ),
         h('div', {
           className: 'mg-dock',
-          'data-mode': consoleMode ? 'game' : 'menu',
-          style: { width: consoleMode ? frame.w + 'px' : '50px' },
+          'data-mode': closing ? 'menu' : (consoleMode ? 'game' : 'menu'),
+          style: { width: closing ? '50px' : (consoleMode ? frame.w + 'px' : '50px') },
         },
           h('button', {
             ref: buttonRef,
