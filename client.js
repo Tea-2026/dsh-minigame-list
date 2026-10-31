@@ -408,7 +408,7 @@ window.__ModuleLoader__.load({
     const CSS = [
       '.mg-root{position:fixed;right:20px;bottom:20px;z-index:50;display:flex;flex-direction:column;align-items:flex-end;gap:12px;pointer-events:none;font-family:inherit}',
       /* Console circle / bar */
-      '.mg-dock{pointer-events:auto;position:relative;box-sizing:border-box;overflow:hidden;width:50px;max-width:calc(100vw - 40px);height:50px;border-radius:25px;border:1px solid color-mix(in srgb, var(--dsw-alias-label-primary-foreground) 16%, transparent);background:linear-gradient(145deg,var(--dsw-alias-brand-primary),color-mix(in srgb,var(--dsw-alias-brand-primary) 82%,var(--dsw-alias-label-primary-foreground)));color:var(--dsw-alias-label-primary-foreground,#fff);box-shadow:0 12px 28px -10px rgba(0,0,0,.55),0 2px 8px rgba(0,0,0,.22);transition:width .32s cubic-bezier(.16,1,.3,1),height .32s cubic-bezier(.16,1,.3,1),border-radius .32s cubic-bezier(.16,1,.3,1),box-shadow .2s ease}',
+      '.mg-dock{pointer-events:auto;position:relative;box-sizing:border-box;overflow:hidden;width:50px;max-width:calc(100vw - 40px);height:50px;border-radius:25px;border:1px solid color-mix(in srgb, var(--dsw-alias-label-primary-foreground) 16%, transparent);background:linear-gradient(145deg,#24486e,#16293f);color:#ffffff;box-shadow:0 12px 28px -10px rgba(0,0,0,.55),0 2px 8px rgba(0,0,0,.22);transition:width .32s cubic-bezier(.16,1,.3,1),height .32s cubic-bezier(.16,1,.3,1),border-radius .32s cubic-bezier(.16,1,.3,1),box-shadow .2s ease}',
       '.mg-dock[data-mode="game"]{height:44px;border-radius:14px}',
       '.mg-launch{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:0;border:0;background:transparent;color:inherit;cursor:pointer;transition:opacity .14s ease;-webkit-tap-highlight-color:transparent}',
       '.mg-dock[data-mode="game"] .mg-launch{opacity:0;pointer-events:none}',
@@ -447,34 +447,33 @@ window.__ModuleLoader__.load({
       '.mg-gamebar-pill{flex:none;padding:1px 7px;border-radius:999px;background:color-mix(in srgb, var(--dsw-alias-label-primary) 7%, transparent);font-size:10px;line-height:1.6;color:var(--dsw-alias-label-secondary)}',
       '.mg-gamebar-pill[data-auto="true"]{background:color-mix(in srgb, var(--dsw-alias-state-warn-primary) 20%, transparent);color:var(--dsw-alias-label-primary)}',
       /* Menu */
-      '.mg-menu{overflow:hidden;background:#0a0c0e;color:#e7eaee}',
-      '.mg-field{position:absolute;inset:0;display:block;width:100%;height:100%;pointer-events:none;z-index:0}',
+      '.mg-menu{overflow:hidden;background:#ffffff;color:#1b2838}',
       '.mg-menu-inner{position:relative;z-index:1;display:flex;flex-direction:column;gap:10px;height:100%;box-sizing:border-box;padding:14px 14px 12px}',
       '.mg-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:0}',
       '.mg-head-main{min-width:0}',
-      '.mg-kicker{display:block;font:600 8px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.32em;color:#77818b}',
-      '.mg-title{display:flex;align-items:center;gap:8px;margin:6px 0 0;font-size:26px;line-height:1.05;letter-spacing:-.01em;font-weight:800;color:#f4f6f8}',
-      '.mg-title::after{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:#d0ff42}',
-      '.mg-sub{margin:6px 0 0;font:500 9px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.1em;color:#8a949e}',
-      '.mg-wait{display:inline-flex;align-items:center;gap:6px;color:#d0ff42}',
-      '.mg-dot{width:5px;height:5px;border-radius:50%;background:#d0ff42;animation:mg-pulse 1.4s ease-out infinite}',
-      '@keyframes mg-pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,#d0ff42 55%, transparent)}70%{box-shadow:0 0 0 5px transparent}100%{box-shadow:0 0 0 0 transparent}}',
-      '.mg-close{flex:none;display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;padding:0;border:1px solid rgba(255,255,255,.18);border-radius:7px;background:transparent;color:#c3cbd3;cursor:pointer;transition:background .12s ease,border-color .12s ease,color .12s ease}',
-      '.mg-close:hover{background:#d0ff42;border-color:#d0ff42;color:#0a0c0e}',
-      '.mg-close:focus-visible{outline:2px solid #d0ff42;outline-offset:2px}',
+      '.mg-kicker{display:block;font:600 8px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.32em;color:#7a8795}',
+      '.mg-title{display:flex;align-items:center;gap:8px;margin:6px 0 0;font-size:26px;line-height:1.05;letter-spacing:-.01em;font-weight:800;color:#14243a}',
+      '.mg-title::after{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:#1e3a5f}',
+      '.mg-sub{margin:6px 0 0;font:500 9px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.1em;color:#7a8795}',
+      '.mg-wait{display:inline-flex;align-items:center;gap:6px;color:#1e3a5f}',
+      '.mg-dot{width:5px;height:5px;border-radius:50%;background:#1e3a5f;animation:mg-pulse 1.4s ease-out infinite}',
+      '@keyframes mg-pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,#1e3a5f 45%, transparent)}70%{box-shadow:0 0 0 5px transparent}100%{box-shadow:0 0 0 0 transparent}}',
+      '.mg-close{flex:none;display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;padding:0;border:1px solid #d7dee6;border-radius:7px;background:#ffffff;color:#1b2838;cursor:pointer;transition:background .12s ease,border-color .12s ease,color .12s ease}',
+      '.mg-close:hover{background:#1e3a5f;border-color:#1e3a5f;color:#ffffff}',
+      '.mg-close:focus-visible{outline:2px solid #1e3a5f;outline-offset:2px}',
       '.mg-grid{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:6px}',
-      '.mg-card{position:relative;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;min-width:0;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.14);background:rgba(10,12,14,.8);color:#dbe1e7;cursor:pointer;text-align:left;opacity:0;transform:translateY(6px);transition:opacity .22s ease var(--mg-delay,0ms),transform .26s cubic-bezier(.16,1,.3,1) var(--mg-delay,0ms),border-color .14s ease,background .14s ease,color .14s ease}',
+      '.mg-card{position:relative;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;min-width:0;padding:8px;border-radius:8px;border:1px solid #e1e6ec;background:#ffffff;color:#24313f;cursor:pointer;text-align:left;opacity:0;transform:translateY(6px);transition:opacity .22s ease var(--mg-delay,0ms),transform .26s cubic-bezier(.16,1,.3,1) var(--mg-delay,0ms),border-color .14s ease,background .14s ease,color .14s ease}',
       '.mg-panel[data-shown="true"] .mg-card{opacity:1;transform:none}',
-      '.mg-card:hover{border-color:#d0ff42;background:#141a10;color:#f4f6f8}',
+      '.mg-card:hover{border-color:#1e3a5f;background:#f4f7fb;color:#14243a}',
       '.mg-card:active{transform:scale(.98)}',
-      '.mg-card:focus-visible{outline:2px solid #d0ff42;outline-offset:2px}',
-      '.mg-index{font:600 8px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.12em;color:#6d7781}',
-      '.mg-card:hover .mg-index{color:#d0ff42}',
-      '.mg-icon{display:inline-flex;align-items:center;justify-content:center;color:#aeb7c0;margin:2px 0}',
+      '.mg-card:focus-visible{outline:2px solid #1e3a5f;outline-offset:2px}',
+      '.mg-index{font:600 8px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.12em;color:#93a0ae}',
+      '.mg-card:hover .mg-index{color:#1e3a5f}',
+      '.mg-icon{display:inline-flex;align-items:center;justify-content:center;color:#5c6b7c;margin:2px 0}',
       '.mg-icon svg{display:block;width:18px;height:18px}',
-      '.mg-card:hover .mg-icon{color:#d0ff42}',
+      '.mg-card:hover .mg-icon{color:#1e3a5f}',
       '.mg-name{font-size:10.5px;line-height:1.2;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}',
-      '.mg-foot{flex:none;display:flex;align-items:center;justify-content:space-between;font:500 8px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.14em;color:#5f6872}',
+      '.mg-foot{flex:none;display:flex;align-items:center;justify-content:space-between;font:500 8px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.14em;color:#93a0ae}',
       /* Stage */
       '.mg-stage{position:relative;flex:1 1 auto;min-height:0;width:100%;border-radius:14px;overflow:hidden;background:color-mix(in srgb, var(--dsw-alias-label-primary) 3%, transparent)}',
       '.mg-stage-grid{position:absolute;inset:0;background-image:linear-gradient(color-mix(in srgb, var(--dsw-alias-label-primary) 6%, transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb, var(--dsw-alias-label-primary) 6%, transparent) 1px,transparent 1px);background-size:24px 24px}',
@@ -4086,96 +4085,6 @@ window.__ModuleLoader__.load({
       );
     }
 
-    function MenuField(props) {
-      const { active } = props;
-      const ref = useRef(null);
-
-      useEffect(() => {
-        const canvas = ref.current;
-        if (!canvas) return undefined;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return undefined;
-
-        let raf = 0;
-        let width = 0;
-        let height = 0;
-        const pointer = { x: -999, y: -999, tx: -999, ty: -999 };
-
-        const resize = () => {
-          const rect = canvas.getBoundingClientRect();
-          const dpr = window.devicePixelRatio || 1;
-          width = rect.width;
-          height = rect.height;
-          canvas.width = Math.max(1, Math.round(width * dpr));
-          canvas.height = Math.max(1, Math.round(height * dpr));
-          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        };
-        resize();
-        const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(resize) : null;
-        if (observer) observer.observe(canvas);
-
-        const onMove = (event) => {
-          const rect = canvas.getBoundingClientRect();
-          const x = event.clientX - rect.left;
-          const y = event.clientY - rect.top;
-          if (x < -48 || y < -48 || x > rect.width + 48 || y > rect.height + 48) {
-            pointer.tx = -999;
-            pointer.ty = -999;
-          } else {
-            pointer.tx = x;
-            pointer.ty = y;
-          }
-        };
-        window.addEventListener('pointermove', onMove, { passive: true });
-
-        const reduce = Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-
-        const draw = () => {
-          raf = window.requestAnimationFrame(draw);
-          if (!active || !width || !height) return;
-          const jumpX = pointer.tx - pointer.x;
-          const jumpY = pointer.ty - pointer.y;
-          if (pointer.x < -100 || Math.abs(jumpX) > 180 || Math.abs(jumpY) > 180) {
-            pointer.x = pointer.tx;
-            pointer.y = pointer.ty;
-          } else {
-            pointer.x += jumpX * 0.16;
-            pointer.y += jumpY * 0.16;
-          }
-          ctx.clearRect(0, 0, width, height);
-          const pitch = 13;
-          const time = reduce ? 0 : performance.now() / 1000;
-          for (let y = pitch / 2; y < height; y += pitch) {
-            for (let x = pitch / 2; x < width; x += pitch) {
-              const dx = x - pointer.x;
-              const dy = y - pointer.y;
-              const dist = Math.sqrt(dx * dx + dy * dy);
-              const near = Math.max(0, 1 - dist / 66);
-              const pulse = reduce ? 0.5 : 0.5 + 0.5 * Math.sin(time * 1.7 + (x + y) * 0.06);
-              const radius = 1 + near * 2.4 + pulse * 0.3;
-              const push = near * 3.4;
-              const ox = dist > 0.01 ? (dx / dist) * push : 0;
-              const oy = dist > 0.01 ? (dy / dist) * push : 0;
-              ctx.fillStyle = near > 0.02
-                ? 'rgba(208,255,66,' + (0.2 + near * 0.72).toFixed(3) + ')'
-                : 'rgba(255,255,255,' + (0.1 + pulse * 0.06).toFixed(3) + ')';
-              ctx.beginPath();
-              ctx.arc(x + ox, y + oy, radius, 0, Math.PI * 2);
-              ctx.fill();
-            }
-          }
-        };
-        raf = window.requestAnimationFrame(draw);
-        return () => {
-          window.cancelAnimationFrame(raf);
-          window.removeEventListener('pointermove', onMove);
-          if (observer) observer.disconnect();
-        };
-      }, [active]);
-
-      return h('canvas', { ref, className: 'mg-field', 'aria-hidden': 'true' });
-    }
-
     function MiniGameLauncher(props) {
       const t = props.t;
       const useStatus = props.useSessionStatus || useNoStatus;
@@ -4373,7 +4282,6 @@ window.__ModuleLoader__.load({
               'aria-hidden': inGame ? 'true' : 'false',
               inert: inGame ? '' : undefined,
             },
-              h(MenuField, { active: open && !inGame }),
               h('div', { className: 'mg-menu-inner' },
                 h('header', { className: 'mg-head' },
                   h('div', { className: 'mg-head-main' },
