@@ -4330,9 +4330,9 @@ window.__ModuleLoader__.load({
             onClick: toggleOpen,
             tabIndex: consoleMode ? -1 : 0,
           },
-            h('span', { className: 'mg-glyph', 'data-state': consoleMode ? 'off' : 'on' },
+            h('span', { className: 'mg-glyph', 'data-state': open ? 'off' : 'on' },
               h(GamepadGlyph, { size: 22 })),
-            h('span', { className: 'mg-glyph', 'data-state': consoleMode ? 'on' : 'off' },
+            h('span', { className: 'mg-glyph', 'data-state': open ? 'on' : 'off' },
               h(CloseGlyph, { size: 20 })),
           ),
           h('div', {
