@@ -23,12 +23,12 @@
       },
       "versions": [
         {
-          "version": "0.1.3",
-          "publishTimestamp": 1793472613,
+          "version": "0.1.4",
+          "publishTimestamp": 1793472636,
           "source": {
             "type": "git",
             "url": "https://github.com/Tea-2026/dsh-minigame-list",
-            "commit": "8eb8abfeb898a3d86bf805fcb5e433c4c4b74bad"
+            "commit": "1df7ceb32ba032a9bc0e6545e6d6eb461fccb2ee"
           }
         }
       ]
