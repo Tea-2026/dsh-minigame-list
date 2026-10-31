@@ -1,0 +1,3 @@
+- insert:
+    - id: minigame-list
+      name: '@local/dsh-minigame-list'
