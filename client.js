@@ -528,12 +528,12 @@ window.__ModuleLoader__.load({
       '.mg-set-reset{align-self:flex-start;height:28px;padding:0 12px;border:1px solid #dcdfe4;border-radius:6px;background:#ffffff;font-size:11px;color:#0f1115;cursor:pointer}',
       '.mg-set-reset:hover{background:#f8f9fa}',
       /* Dock texture */
-      '.mg-dock::before{content:"";position:absolute;inset:-60%;pointer-events:none;opacity:.5;background-repeat:repeat}',
+      '.mg-dock::before{content:"";position:absolute;inset:-60%;pointer-events:none;opacity:.3;background-repeat:repeat}',
       '.mg-dock[data-texture="none"]::before{display:none}',
-      '.mg-dock[data-texture="dots"]::before{background-image:radial-gradient(circle,var(--mg-tex,#ffffff) 1.2px,transparent 1.5px);background-size:9px 9px;transform:rotate(-18deg) scale(1.8);animation:mg-drift-x 9s linear infinite}',
+      '.mg-dock[data-texture="dots"]::before{background-image:radial-gradient(circle,var(--mg-tex,#ffffff) 1.2px,transparent 1.5px);background-size:9px 9px;transform:rotate(-18deg) scale(1.8);animation:mg-drift-x 9s linear infinite;-webkit-mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.25) 22%,#000 55%);mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.25) 22%,#000 55%)}',
       '@keyframes mg-drift-x{from{background-position:0 0}to{background-position:-9px 0}}',
-      '.mg-dock[data-texture="grid"]::before{background-image:linear-gradient(var(--mg-tex,#ffffff) 1px,transparent 1px),linear-gradient(90deg,var(--mg-tex,#ffffff) 1px,transparent 1px);background-size:11px 11px;transform:rotate(-12deg) scale(1.6);animation:mg-drift-x 11s linear infinite}',
-      '.mg-dock[data-texture="contour"]::before{background:var(--mg-tex,#ffffff);transform:rotate(-10deg) scale(1.7);-webkit-mask-image:var(--mg-contour);mask-image:var(--mg-contour);-webkit-mask-size:260px 200px;mask-size:260px 200px;-webkit-mask-repeat:repeat;mask-repeat:repeat;animation:mg-mask-drift 26s linear infinite}',
+      '.mg-dock[data-texture="grid"]::before{background-image:linear-gradient(var(--mg-tex,#ffffff) 1px,transparent 1px),linear-gradient(90deg,var(--mg-tex,#ffffff) 1px,transparent 1px);background-size:11px 11px;transform:rotate(-12deg) scale(1.6);animation:mg-drift-x 11s linear infinite;-webkit-mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.25) 22%,#000 55%);mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.25) 22%,#000 55%)}',
+      '.mg-dock[data-texture="contour"]::before{background:var(--mg-tex,#ffffff);transform:rotate(-10deg) scale(1.7);-webkit-mask-image:var(--mg-contour),linear-gradient(90deg,transparent 0%,rgba(0,0,0,.3) 24%,#000 58%);mask-image:var(--mg-contour),linear-gradient(90deg,transparent 0%,rgba(0,0,0,.3) 24%,#000 58%);-webkit-mask-size:260px 200px,100% 100%;mask-size:260px 200px,100% 100%;-webkit-mask-repeat:repeat,no-repeat;mask-repeat:repeat,no-repeat;-webkit-mask-composite:source-in;mask-composite:intersect;animation:mg-mask-drift 26s linear infinite}',
       '@keyframes mg-mask-drift{from{-webkit-mask-position:0 0;mask-position:0 0}to{-webkit-mask-position:-260px 0;mask-position:-260px 0}}',
       /* Stage */
       '.mg-stage{position:relative;flex:1 1 auto;min-height:0;width:100%;border-radius:14px;overflow:hidden;background:color-mix(in srgb, var(--dsw-alias-label-primary) 3%, transparent)}',
@@ -4150,7 +4150,7 @@ window.__ModuleLoader__.load({
     const THEME_PRESETS = ['#0f1115', '#1e3a5f', '#14532d', '#7f1d1d', '#4c1d95', '#9a3412', '#155e75', '#334155'];
     const GRADIENT_PRESETS = [['#0f1115', '#14532d'], ['#1e3a5f', '#0e7490'], ['#4c1d95', '#be185d'], ['#7f1d1d', '#b45309']];
     const THEME_DEFAULTS = {
-      theme: '#0f1115', gradient: false, advanced: false, from: '#0f1115', to: '#14532d', texture: 'none', texColor: '#ffffff',
+      theme: '#0f1115', gradient: true, advanced: false, from: '#0f1115', to: '#14532d', texture: 'none', texColor: '#ffffff',
     };
 
     function mgThemeRead() {
@@ -4275,9 +4275,9 @@ window.__ModuleLoader__.load({
           return next;
         });
       };
-      const dockFrom = theme.advanced && theme.gradient ? theme.from : theme.theme;
-      const dockTo = theme.advanced && theme.gradient ? theme.to : mgDarken(theme.theme, 0.55);
-      const dockBg = theme.gradient ? 'linear-gradient(145deg,' + dockFrom + ',' + dockTo + ')' : theme.theme;
+      const dockFrom = theme.advanced ? theme.from : theme.theme;
+      const dockTo = theme.advanced ? theme.to : mgDarken(theme.theme, 0.55);
+      const dockBg = 'linear-gradient(145deg,' + dockFrom + ',' + dockTo + ')';
       const dockFg = mgOnColor(dockFrom);
 
       /* Turn start pops the menu open; turn end pauses whatever game is open. */
@@ -4530,22 +4530,13 @@ window.__ModuleLoader__.load({
                   ),
                   h('section', { className: 'mg-set-sec' },
                     h('label', { className: 'mg-set-toggle' },
-                      h('span', null, t('gradient')),
+                      h('span', null, t('advanced')),
                       h('input', {
-                        type: 'checkbox', checked: theme.gradient,
-                        onChange: (event) => saveTheme({ gradient: event.target.checked }),
+                        type: 'checkbox', checked: theme.advanced,
+                        onChange: (event) => saveTheme({ advanced: event.target.checked }),
                       }),
                     ),
-                    theme.gradient
-                      ? h('label', { className: 'mg-set-toggle' },
-                        h('span', null, t('advanced')),
-                        h('input', {
-                          type: 'checkbox', checked: theme.advanced,
-                          onChange: (event) => saveTheme({ advanced: event.target.checked }),
-                        }),
-                      )
-                      : null,
-                    theme.gradient
+                    theme.advanced
                       ? h('div', { className: 'mg-swatches' },
                         GRADIENT_PRESETS.map((pair) => h('button', {
                           key: pair[0] + pair[1],
@@ -4557,7 +4548,7 @@ window.__ModuleLoader__.load({
                         })),
                       )
                       : null,
-                    theme.gradient && theme.advanced
+                    theme.advanced
                       ? h('div', { className: 'mg-set-colors' },
                         h('label', null,
                           h('span', null, 'FROM'),
@@ -4574,10 +4565,7 @@ window.__ModuleLoader__.load({
                           }),
                         ),
                       )
-                      : null,
-                    theme.gradient && !theme.advanced
-                      ? h('div', { className: 'mg-set-hint' }, t('gradientHint'))
-                      : null,
+                      : h('div', { className: 'mg-set-hint' }, t('gradientHint')),
                   ),
                   h('section', { className: 'mg-set-sec' },
                     h('div', { className: 'mg-set-label' }, t('texture')),
