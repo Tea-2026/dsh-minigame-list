@@ -447,7 +447,7 @@ window.__ModuleLoader__.load({
       '.mg-gamebar-pill{flex:none;padding:1px 7px;border-radius:999px;background:color-mix(in srgb, var(--dsw-alias-label-primary) 7%, transparent);font-size:10px;line-height:1.6;color:var(--dsw-alias-label-secondary)}',
       '.mg-gamebar-pill[data-auto="true"]{background:color-mix(in srgb, var(--dsw-alias-state-warn-primary) 20%, transparent);color:var(--dsw-alias-label-primary)}',
       /* Menu */
-      '.mg-menu{position:relative;overflow:hidden;background:#0a0c0e;color:#e7eaee}',
+      '.mg-menu{overflow:hidden;background:#0a0c0e;color:#e7eaee}',
       '.mg-field{position:absolute;inset:0;display:block;width:100%;height:100%;pointer-events:none;z-index:0}',
       '.mg-menu-inner{position:relative;z-index:1;display:flex;flex-direction:column;gap:10px;height:100%;box-sizing:border-box;padding:14px 14px 12px}',
       '.mg-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:0}',
@@ -4133,8 +4133,15 @@ window.__ModuleLoader__.load({
         const draw = () => {
           raf = window.requestAnimationFrame(draw);
           if (!active || !width || !height) return;
-          pointer.x += (pointer.tx - pointer.x) * 0.16;
-          pointer.y += (pointer.ty - pointer.y) * 0.16;
+          const jumpX = pointer.tx - pointer.x;
+          const jumpY = pointer.ty - pointer.y;
+          if (pointer.x < -100 || Math.abs(jumpX) > 180 || Math.abs(jumpY) > 180) {
+            pointer.x = pointer.tx;
+            pointer.y = pointer.ty;
+          } else {
+            pointer.x += jumpX * 0.16;
+            pointer.y += jumpY * 0.16;
+          }
           ctx.clearRect(0, 0, width, height);
           const pitch = 13;
           const time = reduce ? 0 : performance.now() / 1000;
