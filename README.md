@@ -35,6 +35,10 @@
 
 ## 截图
 
+| 菜单 | 主题设置 |
+| --- | --- |
+| ![菜单](assets/menu.png) | ![主题设置](assets/settings.png) |
+
 | 2048 | 贪吃蛇 |
 | --- | --- |
 | ![2048](assets/2048.png) | ![snake](assets/snake.png) |
