@@ -478,6 +478,9 @@ window.__ModuleLoader__.load({
       '.mg-gamebar-pill[data-auto="true"]{background:color-mix(in srgb, var(--dsw-alias-state-warn-primary) 20%, transparent);color:var(--dsw-alias-label-primary)}',
       /* Menu */
       '.mg-menu{overflow:hidden;background:#ffffff;color:#0f1115}',
+      '.mg-frame{position:relative;display:flex;flex-direction:column;align-items:flex-end}',
+      '.mg-bookmark{position:absolute;left:-11px;bottom:26px;width:23px;height:48px;padding:0;border:1px solid #dcdfe4;border-right:0;border-radius:8px 0 0 8px;background:#ffffff;color:#0f1115;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:-6px 4px 14px -8px rgba(0,0,0,.28);clip-path:polygon(0 0,100% 0,100% 82%,50% 100%,0 82%);transition:background .12s ease,color .12s ease}',
+      '.mg-bookmark:hover,.mg-bookmark-on{background:var(--mg-accent,#0f1115);color:#ffffff}',
       '.mg-menu-inner{position:relative;z-index:1;display:flex;flex-direction:column;gap:12px;height:100%;box-sizing:border-box;padding:16px 16px 14px}',
       '.mg-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:0}',
       '.mg-head-main{min-width:0}',
@@ -4419,6 +4422,7 @@ window.__ModuleLoader__.load({
 
       return h('div', { className: 'mg-root', ref: rootRef },
         h('style', null, CSS),
+        h('div', { className: 'mg-frame' },
         h('section', {
           className: 'mg-panel',
           'data-open': open ? 'true' : 'false',
@@ -4447,15 +4451,6 @@ window.__ModuleLoader__.load({
                           t('waiting'))
                         : t('subtitle'),
                     ),
-                  ),
-                  h('button', {
-                    type: 'button',
-                    className: 'mg-close',
-                    'aria-label': t('settingsTitle'),
-                    title: t('settingsTitle'),
-                    onClick: () => setSettings(true),
-                  },
-                    h(SettingsGlyph, { size: 14 }),
                   ),
                 ),
                 h('div', { className: 'mg-grid' },
@@ -4605,6 +4600,16 @@ window.__ModuleLoader__.load({
                 })
                 : null,
             ),
+        ),
+          open
+            ? h('button', {
+              type: 'button',
+              className: 'mg-bookmark' + (settings ? ' mg-bookmark-on' : ''),
+              'aria-label': t('settingsTitle'),
+              title: t('settingsTitle'),
+              onClick: () => setSettings((value) => !value),
+            }, h(SettingsGlyph, { size: 13 }))
+            : null,
         ),
         h('div', {
           className: 'mg-dock',
