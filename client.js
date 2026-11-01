@@ -23,7 +23,7 @@ window.__ModuleLoader__.load({
       custom: '自定义',
       gradient: '渐变',
       advanced: '高级渐变',
-      gradientHint: '主题色渐变到预设亮端',
+      gradientHint: '左侧黑色 → 右侧主题色',
       gradientEnd: '渐变亮端',
       texture: '纹理',
       textureColor: '纹理色',
@@ -146,7 +146,7 @@ window.__ModuleLoader__.load({
       custom: 'Custom',
       gradient: 'Gradient',
       advanced: 'Advanced',
-      gradientHint: 'Theme colour to a preset bright end',
+      gradientHint: 'Black on the left to the theme colour on the right',
       gradientEnd: 'Bright end',
       texture: 'Texture',
       textureColor: 'Texture color',
@@ -4153,7 +4153,6 @@ window.__ModuleLoader__.load({
     const THEME_KEY = 'dsh-minigame-list.theme';
     const THEME_PRESETS = ['#0f1115', '#1e3a5f', '#14532d', '#7f1d1d', '#4c1d95', '#9a3412', '#155e75', '#334155'];
     const GRADIENT_PRESETS = [['#0f1115', '#14532d'], ['#1e3a5f', '#0e7490'], ['#4c1d95', '#be185d'], ['#7f1d1d', '#b45309']];
-    const END_PRESETS = ['#22262c', '#2c3138', '#363c44', '#40474f', '#4a525b', '#555e68'];
     const THEME_DEFAULTS = {
       theme: '#0f1115', gradient: true, advanced: false, from: '#0f1115', to: '#14532d', end: '#363c44', texture: 'none', texColor: '#ffffff',
     };
@@ -4280,8 +4279,8 @@ window.__ModuleLoader__.load({
           return next;
         });
       };
-      const dockFrom = theme.advanced ? theme.from : theme.theme;
-      const dockTo = theme.advanced ? theme.to : (theme.end || '#363c44');
+      const dockFrom = theme.advanced ? theme.from : '#000000';
+      const dockTo = theme.advanced ? theme.to : theme.theme;
       const dockBg = 'linear-gradient(90deg,' + dockFrom + ',' + dockTo + ')';
       const dockFg = mgOnColor(dockFrom);
 
@@ -4542,21 +4541,6 @@ window.__ModuleLoader__.load({
                         onChange: (event) => saveTheme({ advanced: event.target.checked }),
                       }),
                     ),
-                    theme.advanced
-                      ? null
-                      : h('div', { className: 'mg-set-sec' },
-                        h('div', { className: 'mg-set-label' }, t('gradientEnd')),
-                        h('div', { className: 'mg-swatches' },
-                          END_PRESETS.map((color) => h('button', {
-                            key: color,
-                            type: 'button',
-                            className: 'mg-swatch' + ((theme.end || '#363c44') === color ? ' mg-swatch-on' : ''),
-                            style: { background: color },
-                            'aria-label': color,
-                            onClick: () => saveTheme({ end: color }),
-                          })),
-                        ),
-                      ),
                     theme.advanced
                       ? h('div', { className: 'mg-swatches' },
                         GRADIENT_PRESETS.map((pair) => h('button', {
