@@ -21,6 +21,7 @@ window.__ModuleLoader__.load({
       settingsTitle: '主题',
       themeColor: '主题色',
       custom: '自定义',
+      solid: '纯色',
       gradient: '渐变',
       advanced: '高级渐变',
       gradientHint: '左侧更深、右侧主题色；纯黑主题会反过来',
@@ -144,6 +145,7 @@ window.__ModuleLoader__.load({
       settingsTitle: 'Theme',
       themeColor: 'Theme color',
       custom: 'Custom',
+      solid: 'Solid',
       gradient: 'Gradient',
       advanced: 'Advanced',
       gradientHint: 'Darker left to theme on the right; flips for near-black themes',
@@ -4154,7 +4156,7 @@ window.__ModuleLoader__.load({
     const THEME_PRESETS = ['#0f1115', '#1e3a5f', '#14532d', '#7f1d1d', '#4c1d95', '#9a3412', '#155e75', '#334155'];
     const GRADIENT_PRESETS = [['#0f1115', '#14532d'], ['#1e3a5f', '#0e7490'], ['#4c1d95', '#be185d'], ['#7f1d1d', '#b45309']];
     const THEME_DEFAULTS = {
-      theme: '#0f1115', gradient: true, advanced: false, from: '#0f1115', to: '#14532d', end: '#363c44', texture: 'none', texColor: '#ffffff',
+      theme: '#0f1115', gradient: true, advanced: false, solid: false, from: '#0f1115', to: '#14532d', end: '#363c44', texture: 'none', texColor: '#ffffff',
     };
 
     function mgThemeRead() {
@@ -4252,12 +4254,16 @@ window.__ModuleLoader__.load({
           return next;
         });
       };
-      const nearBlack = mgLum(theme.theme) < 0.03;
-      const singleFrom = nearBlack ? theme.theme : '#000000';
-      const singleTo = nearBlack ? '#3f4750' : theme.theme;
-      const dockFrom = theme.advanced ? theme.from : singleFrom;
-      const dockTo = theme.advanced ? theme.to : singleTo;
-      const dockBg = 'linear-gradient(90deg,' + dockFrom + ',' + dockTo + ')';
+      const singleGradient = (color) => {
+        const dark = mgLum(color) < 0.03;
+        return 'linear-gradient(90deg,' + (dark ? color : '#000000') + ',' + (dark ? '#3f4750' : color) + ')';
+      };
+      const dockFrom = theme.advanced ? theme.from : theme.theme;
+      const dockTo = theme.advanced ? theme.to : '#3f4750';
+      const solidDock = !theme.advanced && theme.solid;
+      const dockBg = solidDock
+        ? theme.theme
+        : (theme.advanced ? 'linear-gradient(90deg,' + theme.from + ',' + theme.to + ')' : singleGradient(theme.theme));
       const dockFg = mgOnColor(dockFrom);
 
       /* Turn start pops the menu open; turn end pauses whatever game is open. */
@@ -4495,7 +4501,7 @@ window.__ModuleLoader__.load({
                         key: color,
                         type: 'button',
                         className: 'mg-swatch' + (theme.theme === color ? ' mg-swatch-on' : ''),
-                        style: { background: color },
+                        style: { background: theme.solid ? color : singleGradient(color) },
                         'aria-label': color,
                         onClick: () => saveTheme({ theme: color }),
                       })),
@@ -4505,6 +4511,13 @@ window.__ModuleLoader__.load({
                       h('input', {
                         type: 'color', value: theme.theme, 'aria-label': t('custom'),
                         onChange: (event) => saveTheme({ theme: event.target.value }),
+                      }),
+                    ),
+                    h('label', { className: 'mg-set-toggle' },
+                      h('span', null, t('solid')),
+                      h('input', {
+                        type: 'checkbox', checked: theme.solid,
+                        onChange: (event) => saveTheme({ solid: event.target.checked }),
                       }),
                     ),
                   ),
