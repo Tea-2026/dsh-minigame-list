@@ -478,9 +478,6 @@ window.__ModuleLoader__.load({
       '.mg-gamebar-pill[data-auto="true"]{background:color-mix(in srgb, var(--dsw-alias-state-warn-primary) 20%, transparent);color:var(--dsw-alias-label-primary)}',
       /* Menu */
       '.mg-menu{overflow:hidden;background:#ffffff;color:#0f1115}',
-      '.mg-frame{position:relative;display:flex;flex-direction:column;align-items:flex-end}',
-      '.mg-bookmark{position:absolute;left:-11px;bottom:26px;width:23px;height:48px;padding:0;border:1px solid #dcdfe4;border-right:0;border-radius:8px 0 0 8px;background:#ffffff;color:#0f1115;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:-6px 4px 14px -8px rgba(0,0,0,.28);clip-path:polygon(0 0,100% 0,100% 82%,50% 100%,0 82%);transition:background .12s ease,color .12s ease}',
-      '.mg-bookmark:hover,.mg-bookmark-on{background:var(--mg-accent,#0f1115);color:#ffffff}',
       '.mg-menu-inner{position:relative;z-index:1;display:flex;flex-direction:column;gap:12px;height:100%;box-sizing:border-box;padding:16px 16px 14px}',
       '.mg-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:0}',
       '.mg-head-main{min-width:0}',
@@ -492,7 +489,7 @@ window.__ModuleLoader__.load({
       '.mg-dot{position:relative;flex:none;width:15px;height:15px;border-radius:5px;background:#c9edd6;animation:mg-pulse 1.6s ease-out infinite}',
       '.mg-dot::after{content:"";position:absolute;left:50%;top:50%;width:7px;height:7px;margin:-3.5px 0 0 -3.5px;border-radius:50%;background:#16a34a}',
       '@keyframes mg-pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,#16a34a 45%, transparent)}70%{box-shadow:0 0 0 5px transparent}100%{box-shadow:0 0 0 0 transparent}}',
-      '.mg-close{flex:none;display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border:1px solid #dcdfe4;border-radius:8px;background:#ffffff;color:#0f1115;cursor:pointer;transition:background .12s ease,border-color .12s ease,color .12s ease}',
+      '.mg-close{flex:none;display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;padding:0;border:1px solid #dcdfe4;border-radius:10px;background:#ffffff;color:#0f1115;cursor:pointer;transition:background .12s ease,border-color .12s ease,color .12s ease}',
       '.mg-close:hover{background:var(--mg-accent,#0f1115);border-color:var(--mg-accent,#0f1115);color:#ffffff}',
       '.mg-close:focus-visible{outline:2px solid var(--mg-accent,#0f1115);outline-offset:2px}',
       '.mg-grid{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:7px}',
@@ -4422,7 +4419,6 @@ window.__ModuleLoader__.load({
 
       return h('div', { className: 'mg-root', ref: rootRef },
         h('style', null, CSS),
-        h('div', { className: 'mg-frame' },
         h('section', {
           className: 'mg-panel',
           'data-open': open ? 'true' : 'false',
@@ -4451,6 +4447,15 @@ window.__ModuleLoader__.load({
                           t('waiting'))
                         : t('subtitle'),
                     ),
+                  ),
+                  h('button', {
+                    type: 'button',
+                    className: 'mg-close',
+                    'aria-label': t('settingsTitle'),
+                    title: t('settingsTitle'),
+                    onClick: () => setSettings(true),
+                  },
+                    h(SettingsGlyph, { size: 16 }),
                   ),
                 ),
                 h('div', { className: 'mg-grid' },
@@ -4600,16 +4605,6 @@ window.__ModuleLoader__.load({
                 })
                 : null,
             ),
-        ),
-          open
-            ? h('button', {
-              type: 'button',
-              className: 'mg-bookmark' + (settings ? ' mg-bookmark-on' : ''),
-              'aria-label': t('settingsTitle'),
-              title: t('settingsTitle'),
-              onClick: () => setSettings((value) => !value),
-            }, h(SettingsGlyph, { size: 13 }))
-            : null,
         ),
         h('div', {
           className: 'mg-dock',
