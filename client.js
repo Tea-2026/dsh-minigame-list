@@ -23,7 +23,7 @@ window.__ModuleLoader__.load({
       custom: '自定义',
       gradient: '渐变',
       advanced: '高级渐变',
-      gradientHint: '左侧黑色 → 右侧主题色',
+      gradientHint: '左侧更深、右侧主题色；纯黑主题会反过来',
       gradientEnd: '渐变亮端',
       texture: '纹理',
       textureColor: '纹理色',
@@ -146,7 +146,7 @@ window.__ModuleLoader__.load({
       custom: 'Custom',
       gradient: 'Gradient',
       advanced: 'Advanced',
-      gradientHint: 'Black on the left to the theme colour on the right',
+      gradientHint: 'Darker left to theme on the right; flips for near-black themes',
       gradientEnd: 'Bright end',
       texture: 'Texture',
       textureColor: 'Texture color',
@@ -4279,8 +4279,11 @@ window.__ModuleLoader__.load({
           return next;
         });
       };
-      const dockFrom = theme.advanced ? theme.from : '#000000';
-      const dockTo = theme.advanced ? theme.to : theme.theme;
+      const nearBlack = mgLum(theme.theme) < 0.03;
+      const singleFrom = nearBlack ? theme.theme : '#000000';
+      const singleTo = nearBlack ? '#3f4750' : theme.theme;
+      const dockFrom = theme.advanced ? theme.from : singleFrom;
+      const dockTo = theme.advanced ? theme.to : singleTo;
       const dockBg = 'linear-gradient(90deg,' + dockFrom + ',' + dockTo + ')';
       const dockFg = mgOnColor(dockFrom);
 
