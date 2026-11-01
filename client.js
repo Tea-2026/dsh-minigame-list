@@ -485,35 +485,41 @@ window.__ModuleLoader__.load({
       '.mg-state-dot[data-tone="done"]{background:var(--dsw-alias-state-success-primary);opacity:1}',
       '.mg-gamebar-pill{flex:none;padding:1px 7px;border-radius:999px;background:color-mix(in srgb, var(--dsw-alias-label-primary) 7%, transparent);font-size:10px;line-height:1.6;color:var(--dsw-alias-label-secondary)}',
       '.mg-gamebar-pill[data-auto="true"]{background:color-mix(in srgb, var(--dsw-alias-state-warn-primary) 20%, transparent);color:var(--dsw-alias-label-primary)}',
-      /* Menu */
+      /* Menu — arcade selector: masthead rule, keycap tiles, status bar */
       '.mg-menu{overflow:hidden;background:#ffffff;color:#0f1115}',
       '.mg-menu-inner{position:relative;z-index:1;display:flex;flex-direction:column;gap:12px;height:100%;box-sizing:border-box;padding:16px 16px 14px}',
       '.mg-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:0}',
-      '.mg-head-main{min-width:0}',
-      '.mg-kicker{display:block;font:600 9px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.3em;color:#8b929c}',
+      '.mg-head-main{flex:1 1 auto;min-width:0}',
+      '.mg-kicker-row{display:flex;align-items:center;gap:9px}',
+      '.mg-kicker{flex:none;font:600 9px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.3em;color:#8b929c}',
+      '.mg-kicker-rule{flex:1 1 auto;height:1px;background:#eceef1;transform:scaleX(0);transform-origin:left}',
+      '.mg-panel[data-shown="true"] .mg-kicker-rule{transform:scaleX(1);animation:mg-rule-in .52s cubic-bezier(.16,1,.3,1) 60ms backwards}',
+      '@keyframes mg-rule-in{from{transform:scaleX(0)}to{transform:scaleX(1)}}',
       '.mg-title{display:flex;align-items:center;gap:9px;margin:7px 0 0;font-size:30px;line-height:1.05;letter-spacing:-.01em;font-weight:800;color:#0f1115}',
-      '.mg-title::after{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--mg-accent,#0f1115)}',
+      '.mg-title::after{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--mg-accent,#0f1115);box-shadow:0 0 0 1px rgba(15,17,21,.12)}',
       '.mg-sub{margin:7px 0 0;font:500 10.5px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.08em;color:#8b929c}',
       '.mg-wait{display:inline-flex;align-items:center;gap:7px;margin-top:2px;padding:3px 10px 3px 6px;border-radius:999px;background:#e9f6ee;color:#33403a;font-family:system-ui,"Microsoft YaHei",sans-serif;font-size:11px;letter-spacing:.02em}',
       '.mg-dot{position:relative;flex:none;width:15px;height:15px;border-radius:5px;background:#c9edd6;animation:mg-pulse 1.6s ease-out infinite}',
       '.mg-dot::after{content:"";position:absolute;left:50%;top:50%;width:7px;height:7px;margin:-3.5px 0 0 -3.5px;border-radius:50%;background:#16a34a}',
       '@keyframes mg-pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,#16a34a 45%, transparent)}70%{box-shadow:0 0 0 5px transparent}100%{box-shadow:0 0 0 0 transparent}}',
       '.mg-close{flex:none;display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;border:1px solid #dcdfe4;border-radius:12px;background:#ffffff;color:#0f1115;cursor:pointer;transition:background .12s ease,border-color .12s ease,color .12s ease}',
-      '.mg-close:hover{background:var(--mg-accent,#0f1115);border-color:var(--mg-accent,#0f1115);color:#ffffff}',
+      '.mg-close:hover{background:var(--mg-accent,#0f1115);border-color:var(--mg-accent,#0f1115);color:var(--mg-on-accent,#ffffff)}',
       '.mg-close:focus-visible{outline:2px solid var(--mg-accent,#0f1115);outline-offset:2px}',
-      '.mg-grid{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:7px}',
-      '.mg-card{position:relative;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;min-width:0;padding:9px;border-radius:9px;border:1px solid #e6e8ec;background:#ffffff;color:#111827;cursor:pointer;text-align:left;opacity:0;transform:translateY(6px);transition:opacity .22s ease var(--mg-delay,0ms),transform .26s cubic-bezier(.16,1,.3,1) var(--mg-delay,0ms),border-color .14s ease,background .14s ease,color .14s ease}',
-      '.mg-panel[data-shown="true"] .mg-card{opacity:1;transform:none}',
-      '.mg-card:hover{border-color:var(--mg-accent,#0f1115);background:color-mix(in srgb,var(--mg-accent,#0f1115) 6%,#ffffff);color:#0f1115}',
-      '.mg-card:active{transform:scale(.98)}',
+      '.mg-grid{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:8px}',
+      '.mg-card{position:relative;display:flex;flex-direction:column;align-items:flex-start;min-width:0;padding:10px;border-radius:10px;border:1px solid #e6e8ec;background:#ffffff;color:#111827;cursor:pointer;text-align:left;opacity:0;transition:border-color .14s ease,background .14s ease,color .14s ease,box-shadow .16s ease,transform .16s cubic-bezier(.16,1,.3,1),opacity .18s ease;-webkit-tap-highlight-color:transparent}',
+      '.mg-panel[data-shown="true"] .mg-card{opacity:1;animation:mg-card-in .34s cubic-bezier(.16,1,.3,1) var(--mg-delay,0ms) backwards}',
+      '@keyframes mg-card-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}',
+      '.mg-card:hover{border-color:var(--mg-accent,#0f1115);background:color-mix(in srgb,var(--mg-accent,#0f1115) 5%,#ffffff);transform:translateY(-1px);box-shadow:0 12px 22px -18px rgba(15,17,21,.4)}',
+      '.mg-card:active{transform:translateY(0) scale(.985);box-shadow:none}',
       '.mg-card:focus-visible{outline:2px solid var(--mg-accent,#0f1115);outline-offset:2px}',
-      '.mg-index{font:600 10px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.1em;color:#a0a7b1}',
-      '.mg-card:hover .mg-index{color:var(--mg-accent,#0f1115)}',
-      '.mg-icon{display:inline-flex;align-items:center;justify-content:center;color:#4b5563;margin:2px 0}',
-      '.mg-icon svg{display:block;width:21px;height:21px}',
-      '.mg-card:hover .mg-icon{color:var(--mg-accent,#0f1115)}',
-      '.mg-name{font-size:12px;line-height:1.2;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}',
-      '.mg-foot{flex:none;display:flex;align-items:center;justify-content:space-between;font:500 9px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.12em;color:#a0a7b1}',
+      '.mg-index{font:600 9px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.12em;color:#a0a7b1;transition:color .14s ease}',
+      '.mg-card:hover .mg-index,.mg-card:focus-visible .mg-index{color:var(--mg-accent,#0f1115)}',
+      '.mg-icon{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:12px;background:#f4f5f7;color:#4b5563;transition:background .14s ease,color .14s ease}',
+      '.mg-icon svg{display:block;width:22px;height:22px}',
+      '.mg-card-main{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;width:100%;margin:auto 0;min-width:0}',
+      '.mg-card:hover .mg-icon,.mg-card:focus-visible .mg-icon{background:color-mix(in srgb,var(--mg-accent,#0f1115) 12%,#ffffff);color:var(--mg-accent,#0f1115)}',
+      '.mg-name{font-size:12px;line-height:1.2;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}',
+      '.mg-foot{flex:none;display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:9px;border-top:1px solid #eceef1;font:500 9px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.12em;color:#a0a7b1}',
       /* Theme settings — a calibration sheet: live console preview, numbered sections */
       '.mg-settings{overflow:auto;background:#ffffff;color:#0f1115;scrollbar-width:thin;scrollbar-color:#d8dbe1 transparent;scrollbar-gutter:stable}',
       '.mg-settings::-webkit-scrollbar{width:8px;height:8px}',
@@ -813,7 +819,7 @@ window.__ModuleLoader__.load({
       '.mg-heart[data-lost="true"]{opacity:.35;color:#cbd5e1}',
       '.mg-breakout-lostheart{position:absolute;top:0;width:16px;height:16px;color:#e11d48;fill:currentColor;pointer-events:none;animation:mg-breakout-heart-fall 1.1s linear forwards}',
       '@keyframes mg-breakout-heart-fall{0%{opacity:1;transform:translateY(0) rotate(0deg)}15%{transform:translateY(-18px) rotate(-40deg)}30%{transform:translateY(-12px) rotate(10deg)}45%{transform:translateY(12px) rotate(80deg)}60%{transform:translateY(52px) rotate(150deg)}75%{transform:translateY(112px) rotate(220deg)}88%{opacity:1;transform:translateY(188px) rotate(280deg)}100%{opacity:0;transform:translateY(280px) rotate(340deg)}}',
-      '@media (prefers-reduced-motion:reduce){.mg-panel,.mg-dock,.mg-view,.mg-card,.mg-console,.mg-launch,.mg-cbtn,.mg-caction,.mg-close,.mg-cell{transition:none}.mg-dot{animation:none}}',
+      '@media (prefers-reduced-motion:reduce){.mg-panel,.mg-dock,.mg-view,.mg-card,.mg-console,.mg-launch,.mg-cbtn,.mg-caction,.mg-close,.mg-cell{transition:none}.mg-dot{animation:none}.mg-panel[data-shown="true"] .mg-card,.mg-panel[data-shown="true"] .mg-kicker-rule{animation:none}}',
     ].join('');
 
     /* Shelf entries. `w`/`h` are the frame the menu morphs into; `extra` is the
@@ -4448,6 +4454,26 @@ window.__ModuleLoader__.load({
         };
       }, [open, gameId, closePanel]);
 
+      /* Arrow keys walk the 3x3 shelf; Enter still opens the focused game. */
+      const onGridKeyDown = (event) => {
+        const step = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -3, ArrowDown: 3 }[event.key];
+        const jump = event.key === 'Home' ? 'first' : (event.key === 'End' ? 'last' : null);
+        if (step === undefined && !jump) return;
+        const cards = Array.prototype.slice.call(event.currentTarget.querySelectorAll('.mg-card'));
+        const current = event.target && typeof event.target.closest === 'function'
+          ? event.target.closest('.mg-card')
+          : event.target;
+        const index = cards.indexOf(current);
+        if (index < 0) return;
+        const next = jump
+          ? (jump === 'first' ? 0 : cards.length - 1)
+          : index + step;
+        if (next < 0 || next >= cards.length) return;
+        event.preventDefault();
+        const node = cards[next];
+        if (node && typeof node.focus === 'function') node.focus();
+      };
+
       const toggleOpen = useCallback(() => {
         if (open) closePanel(false);
         else setOpen(true);
@@ -4526,7 +4552,7 @@ window.__ModuleLoader__.load({
           inert: open ? undefined : '',
           role: 'dialog',
           'aria-label': inGame ? t(game.id) : (settings ? t('settingsTitle') : t('title')),
-          style: { width: frame.w + 'px', height: frame.h + 'px', '--mg-accent': theme.theme },
+          style: { width: frame.w + 'px', height: frame.h + 'px', '--mg-accent': theme.theme, '--mg-on-accent': mgOnColor(theme.theme) },
         },
             h('div', {
               className: 'mg-view mg-menu',
@@ -4537,7 +4563,10 @@ window.__ModuleLoader__.load({
               h('div', { className: 'mg-menu-inner' },
                 h('header', { className: 'mg-head' },
                   h('div', { className: 'mg-head-main' },
-                    h('span', { className: 'mg-kicker' }, 'DSH // ARCADE'),
+                    h('div', { className: 'mg-kicker-row' },
+                      h('span', { className: 'mg-kicker' }, 'DSH // ARCADE'),
+                      h('span', { className: 'mg-kicker-rule', 'aria-hidden': 'true' }),
+                    ),
                     h('h2', { className: 'mg-title' }, t('title')),
                     h('p', { className: 'mg-sub' },
                       running
@@ -4557,24 +4586,26 @@ window.__ModuleLoader__.load({
                     h(SettingsGlyph, { size: 20 }),
                   ),
                 ),
-                h('div', { className: 'mg-grid' },
+                h('div', { className: 'mg-grid', onKeyDown: onGridKeyDown },
                   GAMES.map((item, index) => h('button', {
                     key: item.id,
                     type: 'button',
                     className: 'mg-card',
                     title: t(item.id),
-                    style: { '--mg-delay': (40 + index * 28) + 'ms' },
+                    style: { '--mg-delay': (40 + index * 24) + 'ms' },
                     onClick: () => enterGame(item.id),
                   },
                     h('span', { className: 'mg-index' }, ('0' + (index + 1)).slice(-2)),
-                    h('span', { className: 'mg-icon' }, h(item.Icon)),
-                    h('span', { className: 'mg-name' }, t(item.id)),
+                    h('span', { className: 'mg-card-main' },
+                      h('span', { className: 'mg-icon', 'aria-hidden': 'true' }, h(item.Icon)),
+                      h('span', { className: 'mg-name' }, t(item.id)),
+                    ),
                   )),
                 ),
                 h('div', { className: 'mg-foot' },
                   h('span', null, 'P PAUSE'),
                   h('span', null, 'ESC CLOSE'),
-                  h('span', null, '09 MODULES'),
+                  h('span', null, ('0' + GAMES.length).slice(-2) + ' MODULES'),
                 ),
               ),
             ),
