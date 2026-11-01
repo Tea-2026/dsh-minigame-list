@@ -4632,9 +4632,9 @@ window.__ModuleLoader__.load({
             onClick: toggleOpen,
             tabIndex: consoleMode ? -1 : 0,
           },
-            h('span', { className: 'mg-glyph', 'data-state': open ? 'off' : 'on' },
+            h('span', { className: 'mg-glyph', 'data-state': open && !closing ? 'off' : 'on' },
               h(GamepadGlyph, { size: 22 })),
-            h('span', { className: 'mg-glyph', 'data-state': open ? 'on' : 'off' },
+            h('span', { className: 'mg-glyph', 'data-state': open && !closing ? 'on' : 'off' },
               h(CloseGlyph, { size: 20 })),
           ),
           h('div', {

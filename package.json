@@ -1,6 +1,6 @@
 {
   "name": "@local/dsh-minigame-list",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "private": true,
   "type": "module",
   "description": "Circular mini-game launcher floating at the bottom-right of the Harness frame; opens a game list.",
