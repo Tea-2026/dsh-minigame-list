@@ -25,6 +25,20 @@ const local = await call('/health', null, { origin: 'http://127.0.0.1:53716' });
 if (local.status !== 200) throw new Error('local origin blocked');
 if (local.acao !== 'http://127.0.0.1:53716') throw new Error('cors header missing');
 
+const desktop = await call('/health', null, { origin: 'dsh-app://app' });
+if (desktop.status !== 200) throw new Error('desktop origin blocked: ' + desktop.status);
+if (desktop.acao !== 'dsh-app://app') throw new Error('desktop cors header missing');
+const preflight = await fetch(base + '/warm', {
+  method: 'OPTIONS',
+  headers: {
+    origin: 'dsh-app://app',
+    'access-control-request-method': 'POST',
+    'access-control-request-headers': 'content-type',
+  },
+});
+if (preflight.status !== 204) throw new Error('desktop preflight failed: ' + preflight.status);
+if (preflight.headers.get('access-control-allow-origin') !== 'dsh-app://app') throw new Error('desktop preflight cors missing');
+
 const warm = await call('/warm', { id: 'fake' });
 if (warm.json.state !== 'ready') throw new Error('warm failed: ' + JSON.stringify(warm.json));
 const move = await call('/move', { id: 'fake', fen: 'startpos', moves: [], movetime: 100 });

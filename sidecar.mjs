@@ -8,6 +8,10 @@ import { createEngineStore } from './lib/engine-store.mjs';
 export const PROTOCOL = 'dsh-minigame-sidecar/1';
 const BODY_LIMIT = 64 * 1024;
 const LOCAL_ORIGIN = /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/i;
+/* The desktop app renders its UI from dsh-app://app (see app.asar lib/main.js),
+ * so its fetches carry that origin instead of the web server's http origin. */
+const APP_ORIGIN = 'dsh-app://app';
+const allowedOrigin = (origin) => !origin || origin === APP_ORIGIN || LOCAL_ORIGIN.test(origin);
 
 function readBody(req) {
   return new Promise((resolve, reject) => {
@@ -64,7 +68,8 @@ export function startSidecar(options = {}) {
 
   const server = http.createServer(async (req, res) => {
     const origin = req.headers.origin;
-    if (origin && !LOCAL_ORIGIN.test(origin)) {
+    if (!allowedOrigin(origin)) {
+      log('warn', 'origin rejected: ' + origin);
       res.writeHead(403, { 'content-type': 'application/json; charset=utf-8' });
       res.end(JSON.stringify({ error: 'origin not allowed', code: 'origin' }));
       return;
