@@ -1881,7 +1881,12 @@ window.__ModuleLoader__.load({
             if (index >= 0 && index < board.length && board[index] === 0) move = index;
           }
           if (move === null) move = gomokuReply(board, settings.difficulty);
-          if (board[move] !== 0) return;
+          if (move < 0 || board[move] !== 0) move = board.indexOf(0);
+          if (move < 0) {
+            setResult(3);
+            setStatus('over');
+            return;
+          }
           const next = board.slice();
           next[move] = 2;
           setBoard(next);
