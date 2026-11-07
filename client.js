@@ -2080,6 +2080,68 @@ window.__ModuleLoader__.load({
       return scored[0].move;
     }
 
+    let mgPortPromise = null;
+    function mgSidecarPort() {
+      if (!mgPortPromise) {
+        mgPortPromise = (async () => {
+          for (let port = 38651; port <= 38661; port += 1) {
+            try {
+              const res = await fetch('http://127.0.0.1:' + port + '/health', { signal: AbortSignal.timeout(600) });
+              if (res.ok) return port;
+            } catch (error) {
+              /* try the next port */
+            }
+          }
+          return 0;
+        })();
+      }
+      return mgPortPromise;
+    }
+
+    async function mgEngineMove(id, fen, movetime) {
+      const port = await mgSidecarPort();
+      if (!port) return null;
+      const res = await fetch('http://127.0.0.1:' + port + '/move', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ id, fen, movetime }),
+      });
+      const json = await res.json();
+      if (json.error) return null;
+      return json.bestmove || null;
+    }
+
+    function xqFen(board, color) {
+      const ranks = [];
+      for (let y = 0; y < XQ_H; y += 1) {
+        let rank = '';
+        let empty = 0;
+        for (let x = 0; x < XQ_W; x += 1) {
+          const piece = board[y * XQ_W + x];
+          if (!piece) {
+            empty += 1;
+            continue;
+          }
+          if (empty) {
+            rank += empty;
+            empty = 0;
+          }
+          rank += piece;
+        }
+        if (empty) rank += empty;
+        ranks.push(rank);
+      }
+      return ranks.join('/') + ' ' + (color === 'r' ? 'w' : 'b') + ' - - 0 1';
+    }
+
+    function xqUciMove(uci) {
+      if (!/^[a-i][0-9][a-i][0-9]/.test(uci || '')) return null;
+      const from = Number(uci[1]) * XQ_W + (uci.charCodeAt(0) - 97);
+      const to = Number(uci[3]) * XQ_W + (uci.charCodeAt(2) - 97);
+      if (from < 0 || from >= 90 || to < 0 || to >= 90) return null;
+      return { from, to };
+    }
+
     function XiangqiGame(props) {
       const { t, paused, restartTick } = props;
       const [settings, setSettings] = useState(() => readBoardSettings(XQ_SETTINGS_KEY));
@@ -2115,8 +2177,17 @@ window.__ModuleLoader__.load({
       useEffect(() => {
         if (settings.mode !== 'ai' || !settings.installed) return undefined;
         if (status !== 'playing' || turn !== 'b' || winner || paused) return undefined;
-        const id = window.setTimeout(() => {
-          const move = xqAiMove(board, 'b', settings.difficulty);
+        let dead = false;
+        const id = window.setTimeout(async () => {
+          let move = null;
+          try {
+            const best = await mgEngineMove('xiangqi', xqFen(board, 'b'), 500);
+            move = best ? xqUciMove(best) : null;
+          } catch (error) {
+            move = null;
+          }
+          if (dead) return;
+          if (!move) move = xqAiMove(board, 'b', settings.difficulty);
           if (!move) {
             setWinner('r');
             setStatus('over');
@@ -2135,7 +2206,10 @@ window.__ModuleLoader__.load({
             setTurn('r');
           }
         }, 320);
-        return () => window.clearTimeout(id);
+        return () => {
+          dead = true;
+          window.clearTimeout(id);
+        };
       }, [settings.mode, settings.installed, settings.difficulty, status, turn, winner, paused, board]);
 
       const choose = (index) => {
