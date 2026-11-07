@@ -74,6 +74,7 @@ window.__ModuleLoader__.load({
       back: '返回',
       pause: '暂停',
       resume: '继续',
+      undo: '悔棋',
       placeholder: '占位画面 · 未接入游戏逻辑',
       triggered: '已触发',
       resumeHint: '点控制台继续',
@@ -232,6 +233,7 @@ window.__ModuleLoader__.load({
       back: 'Back',
       pause: 'Pause',
       resume: 'Resume',
+      undo: 'Undo',
       placeholder: 'Placeholder screen — no game logic yet',
       triggered: 'Triggered',
       resumeHint: 'Resume from the console',
@@ -826,11 +828,16 @@ window.__ModuleLoader__.load({
       '.mg-gomoku-board{position:relative;width:100%;aspect-ratio:1;height:auto;max-height:100%;box-sizing:border-box;padding:3%;border-radius:10px;background:linear-gradient(145deg,#e7cba3,#d6b083);box-shadow:inset 0 0 0 1px rgba(107,78,46,.35),0 1px 2px rgba(0,0,0,.18);cursor:pointer;touch-action:manipulation}',
       '.mg-gomoku-grid{position:relative;width:100%;height:100%}',
       '.mg-gomoku-lines{position:absolute;inset:0;width:100%;height:100%;overflow:visible}',
-      '.mg-gomoku-stone{position:absolute;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 1px 2px rgba(0,0,0,.35);pointer-events:none}',
+      '.mg-gomoku-stone{position:absolute;box-sizing:border-box;border:1px solid rgba(20,20,22,.28);border-radius:50%;transform:translate(-50%,-50%);box-shadow:inset 0 1px 2px rgba(255,255,255,.16),inset 0 -2px 3px rgba(0,0,0,.16),0 2px 3px rgba(0,0,0,.35);pointer-events:none}',
       '.mg-gomoku-stone[data-color="1"]{background:radial-gradient(circle at 35% 30%,#4b4b4e,#101012)}',
       '.mg-gomoku-stone[data-color="2"]{background:radial-gradient(circle at 35% 30%,#ffffff,#d8d8db)}',
-      '.mg-gomoku-stone[data-last="true"]{box-shadow:0 0 0 2px #e11d48,0 1px 2px rgba(0,0,0,.35)}',
-      '.mg-gomoku-over{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:color-mix(in srgb, var(--dsw-alias-bg-base) 58%, transparent);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}',
+      '.mg-gomoku-stone[data-last="true"]{box-shadow:0 0 0 2px #e11d48,inset 0 1px 2px rgba(255,255,255,.16),0 2px 3px rgba(0,0,0,.35)}',
+      '.mg-gomoku-stone[data-last="true"],.mg-go-stone[data-last="true"],.mg-xq-piece[data-last="true"]{animation:mg-piece-in .26s cubic-bezier(.2,.8,.2,1)}',
+      '.mg-gomoku-stone[data-last="true"]::after,.mg-go-stone[data-last="true"]::after{content:"";position:absolute;inset:-30%;border-radius:50%;border:1.5px solid rgba(225,29,72,.55);animation:mg-halo 1.6s ease-out infinite;pointer-events:none}',
+      '@keyframes mg-piece-in{0%{scale:.35;opacity:.15}65%{scale:1.08;opacity:1}100%{scale:1}}',
+      '@keyframes mg-halo{0%{transform:scale(.72);opacity:.85}70%{transform:scale(1.12);opacity:0}100%{opacity:0}}',
+      '@keyframes mg-over-in{from{opacity:0;transform:translateY(5px) scale(.98)}to{opacity:1;transform:none}}',
+      '.mg-gomoku-over{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:color-mix(in srgb, var(--dsw-alias-bg-base) 58%, transparent);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);animation:mg-over-in .24s ease-out}',
       '.mg-gomoku-over-title{font-size:14px;font-weight:600}',
       '.mg-gomoku-over-meta{font-size:11.5px;color:var(--dsw-alias-label-secondary);font-variant-numeric:tabular-nums}',
       /* Xiangqi */
@@ -841,10 +848,11 @@ window.__ModuleLoader__.load({
       '.mg-xq-grid{position:relative;width:100%;height:100%;container-type:inline-size}',
       '.mg-xq-lines{position:absolute;inset:0;width:100%;height:100%;overflow:visible}',
       '.mg-xq-river{position:absolute;top:50%;transform:translateY(-50%);font-family:"KaiTi","STKaiti","Kaiti SC","楷体","Songti SC",serif;font-size:30px;font-size:9cqw;font-weight:600;line-height:1;letter-spacing:.18em;color:#7a5a34;opacity:.82;pointer-events:none;white-space:nowrap}',
-      '.mg-xq-piece{position:absolute;transform:translate(-50%,-50%);width:11%;aspect-ratio:1;height:auto;min-height:0;box-sizing:border-box;padding:0;border-radius:999px;border:1px solid rgba(120,90,52,.85);background:radial-gradient(circle at 35% 30%,#fdf3df,#efd9b4);font-family:"KaiTi","STKaiti","Kaiti SC","楷体","Songti SC","Noto Serif SC",serif;font-size:28px;font-size:7.2cqw;font-weight:700;line-height:1;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:box-shadow .12s ease}',
+      '.mg-xq-piece{position:absolute;transform:translate(-50%,-50%);width:11%;aspect-ratio:1;height:auto;min-height:0;box-sizing:border-box;padding:0;border-radius:50%;border:1px solid rgba(120,90,52,.85);background:radial-gradient(circle at 35% 30%,#fdf3df,#efd9b4);font-family:"KaiTi","STKaiti","Kaiti SC","楷体","Songti SC","Noto Serif SC",serif;font-size:28px;font-size:7.2cqw;font-weight:700;line-height:1;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;box-shadow:inset 0 0 0 2px rgba(120,90,52,.22),inset 0 1px 2px rgba(255,255,255,.55),0 2px 3px rgba(0,0,0,.28);transition:box-shadow .12s ease}',
       '.mg-xq-red{color:#b91c1c}',
       '.mg-xq-black{color:#1f2937}',
       '.mg-xq-piece.mg-xq-sel{box-shadow:0 0 0 3px #e11d48,0 1px 3px rgba(0,0,0,.4)}',
+      '.mg-xq-piece[data-last="true"]{box-shadow:0 0 0 2px rgba(225,29,72,.85),inset 0 0 0 2px rgba(120,90,52,.22),0 2px 3px rgba(0,0,0,.28)}',
       '.mg-xq-dot{position:absolute;transform:translate(-50%,-50%);width:7.5%;aspect-ratio:1;padding:0;border:0;border-radius:50%;background:rgba(225,29,72,.4);cursor:pointer;z-index:2}',
       '.mg-xq-dot-cap{background:transparent;box-shadow:inset 0 0 0 2px rgba(225,29,72,.85)}',
       /* Go */
@@ -854,7 +862,7 @@ window.__ModuleLoader__.load({
       '.mg-go-board{position:relative;width:100%;aspect-ratio:1;height:auto;max-height:100%;box-sizing:border-box;padding:4.5%;border-radius:10px;background:linear-gradient(145deg,#e3c79c,#d3ad7c);box-shadow:inset 0 0 0 1px rgba(107,78,46,.35),0 1px 2px rgba(0,0,0,.18);cursor:pointer}',
       '.mg-go-grid{position:relative;width:100%;height:100%}',
       '.mg-go-lines{position:absolute;inset:0;width:100%;height:100%;overflow:visible}',
-      '.mg-go-stone{position:absolute;width:6.9%;aspect-ratio:1;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 1px 2px rgba(0,0,0,.35);pointer-events:none}',
+      '.mg-go-stone{position:absolute;width:6.9%;aspect-ratio:1;box-sizing:border-box;border:1px solid rgba(20,20,22,.28);border-radius:50%;transform:translate(-50%,-50%);box-shadow:inset 0 1px 2px rgba(255,255,255,.16),inset 0 -2px 3px rgba(0,0,0,.16),0 2px 3px rgba(0,0,0,.35);pointer-events:none}',
       '.mg-go-stone[data-color="1"]{background:radial-gradient(circle at 35% 30%,#4b4b4e,#101012)}',
       '.mg-go-stone[data-color="2"]{background:radial-gradient(circle at 35% 30%,#ffffff,#d8d8db)}',
       '.mg-dot-red{background:#b91c1c}',
@@ -942,7 +950,7 @@ window.__ModuleLoader__.load({
       '.mg-heart[data-lost="true"]{opacity:.35;color:#cbd5e1}',
       '.mg-breakout-lostheart{position:absolute;top:0;width:16px;height:16px;color:#e11d48;fill:currentColor;pointer-events:none;animation:mg-breakout-heart-fall 1.1s linear forwards}',
       '@keyframes mg-breakout-heart-fall{0%{opacity:1;transform:translateY(0) rotate(0deg)}15%{transform:translateY(-18px) rotate(-40deg)}30%{transform:translateY(-12px) rotate(10deg)}45%{transform:translateY(12px) rotate(80deg)}60%{transform:translateY(52px) rotate(150deg)}75%{transform:translateY(112px) rotate(220deg)}88%{opacity:1;transform:translateY(188px) rotate(280deg)}100%{opacity:0;transform:translateY(280px) rotate(340deg)}}',
-      '@media (prefers-reduced-motion:reduce){.mg-panel,.mg-dock,.mg-view,.mg-card,.mg-console,.mg-launch,.mg-cbtn,.mg-caction,.mg-close,.mg-cell{transition:none}.mg-dot{animation:none}.mg-panel[data-shown="true"] .mg-card,.mg-panel[data-shown="true"] .mg-kicker-rule{animation:none}.mg-eng-progress span,.mg-eng-skeleton{animation:none}}',
+      '@media (prefers-reduced-motion:reduce){.mg-panel,.mg-dock,.mg-view,.mg-card,.mg-console,.mg-launch,.mg-cbtn,.mg-caction,.mg-close,.mg-cell{transition:none}.mg-dot{animation:none}.mg-panel[data-shown="true"] .mg-card,.mg-panel[data-shown="true"] .mg-kicker-rule{animation:none}.mg-eng-progress span,.mg-eng-skeleton{animation:none}.mg-gomoku-stone[data-last="true"],.mg-go-stone[data-last="true"],.mg-xq-piece[data-last="true"],.mg-gomoku-over{animation:none}.mg-gomoku-stone[data-last="true"]::after,.mg-go-stone[data-last="true"]::after{animation:none;content:none}}',
     ].join('');
 
     /* Shelf entries. `w`/`h` are the frame the menu morphs into; `extra` is the
@@ -1362,9 +1370,9 @@ window.__ModuleLoader__.load({
       { id: '2048', w: 360, h: 420, Game: Game2048, live: true, Icon: TilesIcon },
       { id: 'blocks', w: 270, h: 560, Game: TetrisGame, live: true, Icon: BlocksIcon },
       { id: 'mines', w: 420, h: 400, Game: MinesGame, live: true, Icon: MineIcon },
-      { id: 'gomoku', w: 460, h: 520, Game: GomokuGame, live: true, Icon: GomokuIcon },
-      { id: 'xiangqi', w: 480, h: 560, Game: XiangqiGame, live: true, Icon: XiangqiIcon },
-      { id: 'go', w: 480, h: 540, extra: 'pass', action: 'pass', Game: GoGame, live: true, Icon: GoIcon },
+      { id: 'gomoku', w: 460, h: 520, undo: true, Game: GomokuGame, live: true, Icon: GomokuIcon },
+      { id: 'xiangqi', w: 480, h: 560, undo: true, Game: XiangqiGame, live: true, Icon: XiangqiIcon },
+      { id: 'go', w: 480, h: 540, extra: 'pass', action: 'pass', undo: true, Game: GoGame, live: true, Icon: GoIcon },
       { id: 'match', w: 340, h: 380, extra: 'hint', action: 'hint', Game: MatchGame, live: true, Icon: MatchIcon },
       { id: 'breakout', w: 400, h: 300, extra: 'serve', action: 'serve', Game: BreakoutGame, live: true, Icon: BreakoutIcon },
     ];
@@ -1826,7 +1834,7 @@ window.__ModuleLoader__.load({
     }
 
     function GomokuGame(props) {
-      const { t, paused, restartTick } = props;
+      const { t, paused, restartTick, undoTick } = props;
       const [settings, setSettings] = useState(readGomokuSettings);
       const [board, setBoard] = useState(gomokuNew);
       const [status, setStatus] = useState('setup');
@@ -1835,6 +1843,8 @@ window.__ModuleLoader__.load({
       const [last, setLast] = useState(-1);
       const [thinking, setThinking] = useState(false);
       const lastExtra = useRef(restartTick);
+      const historyRef = useRef([]);
+      const lastUndo = useRef(undoTick);
 
       const save = (patch) => {
         const next = { ...settings, ...patch };
@@ -1849,6 +1859,7 @@ window.__ModuleLoader__.load({
         setResult(0);
         setLast(-1);
         setThinking(false);
+        historyRef.current = [];
       }, []);
 
       useEffect(() => {
@@ -1887,6 +1898,10 @@ window.__ModuleLoader__.load({
             setStatus('over');
             return;
           }
+          historyRef.current.push({
+            board: board.slice(), turn, last, result, status,
+          });
+          if (historyRef.current.length > 80) historyRef.current.shift();
           const next = board.slice();
           next[move] = 2;
           setBoard(next);
@@ -1907,10 +1922,33 @@ window.__ModuleLoader__.load({
         };
       }, [settings.mode, settings.difficulty, status, turn, result, paused, board]);
 
+      useEffect(() => {
+        if (undoTick === lastUndo.current) return;
+        lastUndo.current = undoTick;
+        if (status === 'setup') return;
+        const history = historyRef.current;
+        if (!history.length) return;
+        let snapshot = history.pop();
+        if (settings.mode === 'ai') {
+          while (snapshot && snapshot.turn !== 1 && history.length) snapshot = history.pop();
+        }
+        if (!snapshot) return;
+        setBoard(snapshot.board);
+        setTurn(snapshot.turn);
+        setLast(snapshot.last);
+        setResult(snapshot.result);
+        setStatus(snapshot.status);
+        setThinking(false);
+      }, [undoTick, settings.mode, status]);
+
       const place = (index) => {
         if (paused || status !== 'playing' || result) return;
         if (board[index] !== 0) return;
         if (settings.mode === 'ai' && turn !== 1) return;
+        historyRef.current.push({
+          board: board.slice(), turn, last, result, status,
+        });
+        if (historyRef.current.length > 80) historyRef.current.shift();
         const next = board.slice();
         next[index] = turn;
         setBoard(next);
@@ -2311,7 +2349,7 @@ window.__ModuleLoader__.load({
     }
 
     function XiangqiGame(props) {
-      const { t, paused, restartTick } = props;
+      const { t, paused, restartTick, undoTick } = props;
       const [settings, setSettings] = useState(() => readBoardSettings(XQ_SETTINGS_KEY));
       const [board, setBoard] = useState(xqNew);
       const [turn, setTurn] = useState('r');
@@ -2319,7 +2357,10 @@ window.__ModuleLoader__.load({
       const [legal, setLegal] = useState([]);
       const [winner, setWinner] = useState('');
       const [status, setStatus] = useState('setup');
+      const [lastMove, setLastMove] = useState(null);
       const lastExtra = useRef(restartTick);
+      const historyRef = useRef([]);
+      const lastUndo = useRef(undoTick);
 
       const save = (patch) => {
         const next = { ...settings, ...patch };
@@ -2333,7 +2374,9 @@ window.__ModuleLoader__.load({
         setSelected(-1);
         setLegal([]);
         setWinner('');
+        setLastMove(null);
         setStatus('playing');
+        historyRef.current = [];
       }, []);
 
       useEffect(() => {
@@ -2361,9 +2404,14 @@ window.__ModuleLoader__.load({
             setStatus('over');
             return;
           }
+          historyRef.current.push({
+            board: board.slice(), turn, winner, status, lastMove,
+          });
+          if (historyRef.current.length > 80) historyRef.current.shift();
           const next = board.slice();
           next[move.to] = next[move.from];
           next[move.from] = '';
+          setLastMove({ from: move.from, to: move.to });
           setBoard(next);
           setSelected(-1);
           setLegal([]);
@@ -2379,6 +2427,26 @@ window.__ModuleLoader__.load({
           window.clearTimeout(id);
         };
       }, [settings.mode, settings.difficulty, status, turn, winner, paused, board]);
+
+      useEffect(() => {
+        if (undoTick === lastUndo.current) return;
+        lastUndo.current = undoTick;
+        if (status === 'setup') return;
+        const history = historyRef.current;
+        if (!history.length) return;
+        let snapshot = history.pop();
+        if (settings.mode === 'ai') {
+          while (snapshot && snapshot.turn !== 'r' && history.length) snapshot = history.pop();
+        }
+        if (!snapshot) return;
+        setBoard(snapshot.board);
+        setTurn(snapshot.turn);
+        setWinner(snapshot.winner);
+        setStatus(snapshot.status);
+        setLastMove(snapshot.lastMove);
+        setSelected(-1);
+        setLegal([]);
+      }, [undoTick, settings.mode, status]);
 
       const choose = (index) => {
         if (paused || status !== 'playing' || winner) return;
@@ -2402,9 +2470,14 @@ window.__ModuleLoader__.load({
         if (paused || status !== 'playing' || winner || selected < 0) return;
         if (legal.indexOf(index) < 0) return;
         if (settings.mode === 'ai' && turn !== 'r') return;
+        historyRef.current.push({
+          board: board.slice(), turn, winner, status, lastMove,
+        });
+        if (historyRef.current.length > 80) historyRef.current.shift();
         const next = board.slice();
         next[index] = board[selected];
         next[selected] = '';
+        setLastMove({ from: selected, to: index });
         const foe = xqOther(turn);
         setBoard(next);
         setSelected(-1);
@@ -2434,6 +2507,7 @@ window.__ModuleLoader__.load({
             type: 'button',
             className: 'mg-xq-piece ' + (xqColor(board[i]) === 'r' ? 'mg-xq-red' : 'mg-xq-black')
               + (selected === i ? ' mg-xq-sel' : ''),
+            'data-last': lastMove && lastMove.to === i ? 'true' : 'false',
             style: { left, top },
             'aria-label': XQ_NAMES[board[i]],
             onClick: () => choose(i),
@@ -2589,7 +2663,7 @@ window.__ModuleLoader__.load({
     }
 
     function GoGame(props) {
-      const { t, paused, extraTick, restartTick } = props;
+      const { t, paused, extraTick, restartTick, undoTick } = props;
       const [settings, setSettings] = useState(() => readBoardSettings(GO_SETTINGS_KEY));
       const [board, setBoard] = useState(goNew);
       const [turn, setTurn] = useState(1);
@@ -2598,7 +2672,10 @@ window.__ModuleLoader__.load({
       const [ko, setKo] = useState('');
       const [status, setStatus] = useState('setup');
       const [score, setScore] = useState(null);
+      const [lastMove, setLastMove] = useState(-1);
       const lastExtra = useRef(extraTick);
+      const historyRef = useRef([]);
+      const lastUndo = useRef(undoTick);
 
       const save = (patch) => {
         const next = { ...settings, ...patch };
@@ -2613,7 +2690,9 @@ window.__ModuleLoader__.load({
         setPassed(0);
         setKo('');
         setScore(null);
+        setLastMove(-1);
         setStatus('playing');
+        historyRef.current = [];
       }, []);
 
       const lastRestart = useRef(restartTick);
@@ -2624,6 +2703,11 @@ window.__ModuleLoader__.load({
       }, [restartTick, startGame]);
 
       const commit = (result, index) => {
+        historyRef.current.push({
+          board: board.slice(), turn, captured: { ...captured }, passed, ko, status, score, lastMove,
+        });
+        if (historyRef.current.length > 160) historyRef.current.shift();
+        setLastMove(index);
         setKo(board.join(''));
         setBoard(result.board);
         setPassed(0);
@@ -2635,6 +2719,11 @@ window.__ModuleLoader__.load({
 
       const doPass = useCallback(() => {
         if (paused || status !== 'playing') return;
+        historyRef.current.push({
+          board: board.slice(), turn, captured: { ...captured }, passed, ko, status, score, lastMove,
+        });
+        if (historyRef.current.length > 160) historyRef.current.shift();
+        setLastMove(-1);
         const next = passed + 1;
         setKo('');
         if (next >= 2) {
@@ -2644,7 +2733,7 @@ window.__ModuleLoader__.load({
         }
         setPassed(next);
         setTurn(3 - turn);
-      }, [paused, status, passed, board, turn]);
+      }, [paused, status, passed, board, turn, captured, ko, score, lastMove]);
 
       const passRef = useRef(doPass);
       passRef.current = doPass;
@@ -2690,6 +2779,27 @@ window.__ModuleLoader__.load({
           window.clearTimeout(id);
         };
       }, [settings.mode, settings.difficulty, status, turn, paused, board, ko, doPass, commit]);
+
+      useEffect(() => {
+        if (undoTick === lastUndo.current) return;
+        lastUndo.current = undoTick;
+        if (status === 'setup') return;
+        const history = historyRef.current;
+        if (!history.length) return;
+        let snapshot = history.pop();
+        if (settings.mode === 'ai') {
+          while (snapshot && snapshot.turn !== 1 && history.length) snapshot = history.pop();
+        }
+        if (!snapshot) return;
+        setBoard(snapshot.board);
+        setTurn(snapshot.turn);
+        setCaptured(snapshot.captured);
+        setPassed(snapshot.passed);
+        setKo(snapshot.ko);
+        setStatus(snapshot.status);
+        setScore(snapshot.score);
+        setLastMove(snapshot.lastMove);
+      }, [undoTick, settings.mode, status]);
 
       const place = (index) => {
         if (paused || status !== 'playing') return;
@@ -2744,6 +2854,7 @@ window.__ModuleLoader__.load({
           key: i,
           className: 'mg-go-stone',
           'data-color': String(board[i]),
+          'data-last': i === lastMove ? 'true' : 'false',
           style: {
             left: (((i % GO_N) * 100) / (GO_N - 1)) + '%',
             top: ((Math.floor(i / GO_N) * 100) / (GO_N - 1)) + '%',
@@ -4356,6 +4467,13 @@ window.__ModuleLoader__.load({
       );
     }
 
+    function UndoGlyph(props) {
+      return h(Glyph, { size: props.size || 16 },
+        h('path', { d: 'M9 14L4 9l5-5' }),
+        h('path', { d: 'M4 9h9a6 6 0 0 1 0 12h-2' }),
+      );
+    }
+
     function FlagGlyph(props) {
       return h(Glyph, { size: props.size || 12 },
         h('path', { d: 'M6.5 20V4.5' }),
@@ -4432,7 +4550,7 @@ window.__ModuleLoader__.load({
 
     function GameStage(props) {
       const {
-        t, game, active, extraTick, restartTick, running, pending, paused, pauseReason, boost, note, onFrame, onTogglePause,
+        t, game, active, extraTick, undoTick, restartTick, running, pending, paused, pauseReason, boost, note, onFrame, onTogglePause,
       } = props;
 
       let tone = 'idle';
@@ -4468,7 +4586,7 @@ window.__ModuleLoader__.load({
           game.Game ? null : h('div', { className: 'mg-stage-grid', 'aria-hidden': 'true' }),
           game.Game
             ? h(game.Game, {
-              t, active, extraTick, restartTick, paused, boost, onFrame, onTogglePause,
+              t, active, extraTick, undoTick, restartTick, paused, boost, onFrame, onTogglePause,
             })
             : h('div', { className: 'mg-stage-center' },
               h('span', { className: 'mg-stage-icon' }, h(game.Icon, { size: 40 })),
@@ -4834,6 +4952,7 @@ window.__ModuleLoader__.load({
       const [pauseReason, setPauseReason] = useState('');
       const [boost, setBoost] = useState(false);
       const [extraTick, setExtraTick] = useState(0);
+      const [undoTick, setUndoTick] = useState(0);
       const [restartTick, setRestartTick] = useState(0);
       const [frameOverride, setFrameOverride] = useState(null);
       const [note, setNote] = useState('');
@@ -5308,7 +5427,7 @@ window.__ModuleLoader__.load({
             },
               inGame
                 ? h(GameStage, {
-                  t, game, active: open, extraTick, restartTick, running, pending, paused, pauseReason, boost, note, onFrame: setFrameOverride, onTogglePause: togglePause,
+                  t, game, active: open, extraTick, undoTick, restartTick, running, pending, paused, pauseReason, boost, note, onFrame: setFrameOverride, onTogglePause: togglePause,
                 })
                 : null,
             ),
@@ -5360,6 +5479,12 @@ window.__ModuleLoader__.load({
               'aria-pressed': paused ? 'true' : 'false',
               onClick: togglePause,
             }, paused ? h(PlayGlyph, { size: 17 }) : h(PauseGlyph, { size: 17 })),
+            game && game.undo
+              ? h('button', {
+                type: 'button', className: 'mg-cbtn', title: t('undo'), 'aria-label': t('undo'),
+                onClick: () => setUndoTick((value) => value + 1),
+              }, h(UndoGlyph, { size: 16 }))
+              : null,
             game && game.Game
               ? h('button', {
                 type: 'button', className: 'mg-cbtn',
