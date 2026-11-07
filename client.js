@@ -848,11 +848,11 @@ window.__ModuleLoader__.load({
       '.mg-xq-grid{position:relative;width:100%;height:100%;container-type:inline-size}',
       '.mg-xq-lines{position:absolute;inset:0;width:100%;height:100%;overflow:visible}',
       '.mg-xq-river{position:absolute;top:50%;transform:translateY(-50%);font-family:"KaiTi","STKaiti","Kaiti SC","楷体","Songti SC",serif;font-size:30px;font-size:9cqw;font-weight:600;line-height:1;letter-spacing:.18em;color:#7a5a34;opacity:.82;pointer-events:none;white-space:nowrap}',
-      '.mg-xq-piece{position:absolute;transform:translate(-50%,-50%);width:11%;aspect-ratio:1;height:auto;min-height:0;box-sizing:border-box;padding:0;border-radius:50%;border:1px solid rgba(120,90,52,.85);background:radial-gradient(circle at 35% 30%,#fdf3df,#efd9b4);font-family:"KaiTi","STKaiti","Kaiti SC","楷体","Songti SC","Noto Serif SC",serif;font-size:28px;font-size:7.2cqw;font-weight:700;line-height:1;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;box-shadow:inset 0 0 0 2px rgba(120,90,52,.22),inset 0 1px 2px rgba(255,255,255,.55),0 2px 3px rgba(0,0,0,.28);transition:box-shadow .12s ease}',
+      '.mg-xq-piece{position:absolute;transform:translate(-50%,-50%);width:11%;aspect-ratio:1;height:auto;min-height:0;box-sizing:border-box;padding:0;border-radius:50%!important;clip-path:circle(50%);border:1px solid rgba(120,90,52,.85);background:radial-gradient(circle at 35% 30%,#fdf3df,#efd9b4);font-family:"KaiTi","STKaiti","Kaiti SC","楷体","Songti SC","Noto Serif SC",serif;font-size:28px;font-size:7.2cqw;font-weight:700;line-height:1;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;box-shadow:inset 0 0 0 2px rgba(120,90,52,.22),inset 0 1px 2px rgba(255,255,255,.55),0 2px 3px rgba(0,0,0,.28);transition:box-shadow .12s ease}',
       '.mg-xq-red{color:#b91c1c}',
       '.mg-xq-black{color:#1f2937}',
-      '.mg-xq-piece.mg-xq-sel{box-shadow:0 0 0 3px #e11d48,0 1px 3px rgba(0,0,0,.4)}',
-      '.mg-xq-piece[data-last="true"]{box-shadow:0 0 0 2px rgba(225,29,72,.85),inset 0 0 0 2px rgba(120,90,52,.22),0 2px 3px rgba(0,0,0,.28)}',
+      '.mg-xq-piece.mg-xq-sel{box-shadow:inset 0 0 0 3px #e11d48,inset 0 0 0 1px rgba(120,90,52,.22),0 2px 3px rgba(0,0,0,.28)}',
+      '.mg-xq-piece[data-last="true"]{box-shadow:inset 0 0 0 2px rgba(225,29,72,.85),inset 0 0 0 1px rgba(120,90,52,.22),0 2px 3px rgba(0,0,0,.28)}',
       '.mg-xq-dot{position:absolute;transform:translate(-50%,-50%);width:7.5%;aspect-ratio:1;padding:0;border:0;border-radius:50%;background:rgba(225,29,72,.4);cursor:pointer;z-index:2}',
       '.mg-xq-dot-cap{background:transparent;box-shadow:inset 0 0 0 2px rgba(225,29,72,.85)}',
       /* Go */
@@ -865,6 +865,12 @@ window.__ModuleLoader__.load({
       '.mg-go-stone{position:absolute;width:6.9%;aspect-ratio:1;box-sizing:border-box;border:1px solid rgba(20,20,22,.28);border-radius:50%;transform:translate(-50%,-50%);box-shadow:inset 0 1px 2px rgba(255,255,255,.16),inset 0 -2px 3px rgba(0,0,0,.16),0 2px 3px rgba(0,0,0,.35);pointer-events:none}',
       '.mg-go-stone[data-color="1"]{background:radial-gradient(circle at 35% 30%,#4b4b4e,#101012)}',
       '.mg-go-stone[data-color="2"]{background:radial-gradient(circle at 35% 30%,#ffffff,#d8d8db)}',
+      '.mg-stone-svg{filter:drop-shadow(0 1.4px 1.4px rgba(0,0,0,.35))}',
+      '.mg-stone-core{transform-box:fill-box;transform-origin:center}',
+      '.mg-stone-svg[data-last="true"] .mg-stone-core{animation:mg-stone-pop .26s cubic-bezier(.2,.8,.2,1)}',
+      '.mg-stone-ring{transform-box:fill-box;transform-origin:center;animation:mg-ring-pulse 1.6s ease-out infinite}',
+      '@keyframes mg-stone-pop{0%{transform:scale(.35);opacity:.15}65%{transform:scale(1.08)}100%{transform:scale(1)}}',
+      '@keyframes mg-ring-pulse{0%{opacity:.9;transform:scale(.95)}70%{opacity:0;transform:scale(1.15)}100%{opacity:0}}',
       '.mg-dot-red{background:#b91c1c}',
       '.mg-gomoku-over-actions{display:flex;align-items:center;gap:8px;margin-top:4px}',
       '.mg-gomoku-setup{position:absolute;inset:0;display:flex;flex-direction:column;gap:8px;padding:12px;overflow:auto}',
@@ -950,7 +956,7 @@ window.__ModuleLoader__.load({
       '.mg-heart[data-lost="true"]{opacity:.35;color:#cbd5e1}',
       '.mg-breakout-lostheart{position:absolute;top:0;width:16px;height:16px;color:#e11d48;fill:currentColor;pointer-events:none;animation:mg-breakout-heart-fall 1.1s linear forwards}',
       '@keyframes mg-breakout-heart-fall{0%{opacity:1;transform:translateY(0) rotate(0deg)}15%{transform:translateY(-18px) rotate(-40deg)}30%{transform:translateY(-12px) rotate(10deg)}45%{transform:translateY(12px) rotate(80deg)}60%{transform:translateY(52px) rotate(150deg)}75%{transform:translateY(112px) rotate(220deg)}88%{opacity:1;transform:translateY(188px) rotate(280deg)}100%{opacity:0;transform:translateY(280px) rotate(340deg)}}',
-      '@media (prefers-reduced-motion:reduce){.mg-panel,.mg-dock,.mg-view,.mg-card,.mg-console,.mg-launch,.mg-cbtn,.mg-caction,.mg-close,.mg-cell{transition:none}.mg-dot{animation:none}.mg-panel[data-shown="true"] .mg-card,.mg-panel[data-shown="true"] .mg-kicker-rule{animation:none}.mg-eng-progress span,.mg-eng-skeleton{animation:none}.mg-gomoku-stone[data-last="true"],.mg-go-stone[data-last="true"],.mg-xq-piece[data-last="true"],.mg-gomoku-over{animation:none}.mg-gomoku-stone[data-last="true"]::after,.mg-go-stone[data-last="true"]::after{animation:none;content:none}}',
+      '@media (prefers-reduced-motion:reduce){.mg-panel,.mg-dock,.mg-view,.mg-card,.mg-console,.mg-launch,.mg-cbtn,.mg-caction,.mg-close,.mg-cell{transition:none}.mg-dot{animation:none}.mg-panel[data-shown="true"] .mg-card,.mg-panel[data-shown="true"] .mg-kicker-rule{animation:none}.mg-eng-progress span,.mg-eng-skeleton{animation:none}.mg-gomoku-stone[data-last="true"],.mg-go-stone[data-last="true"],.mg-xq-piece[data-last="true"],.mg-gomoku-over{animation:none}.mg-stone-core,.mg-stone-ring{animation:none}.mg-gomoku-stone[data-last="true"]::after,.mg-go-stone[data-last="true"]::after{animation:none;content:none}}',
     ].join('');
 
     /* Shelf entries. `w`/`h` are the frame the menu morphs into; `extra` is the
@@ -2052,21 +2058,29 @@ window.__ModuleLoader__.load({
         }));
       });
 
-      const stones = [];
+      const stoneMarks = [];
       for (let i = 0; i < board.length; i += 1) {
         if (board[i] === 0) continue;
-        stones.push(h('div', {
-          key: i,
-          className: 'mg-gomoku-stone',
-          'data-color': String(board[i]),
-          'data-last': i === last ? 'true' : 'false',
-          style: {
-            left: (((i % GOMOKU_N) * 100) / (GOMOKU_N - 1)) + '%',
-            top: ((Math.floor(i / GOMOKU_N) * 100) / (GOMOKU_N - 1)) + '%',
-            width: '6.6%',
-            height: '6.6%',
-          },
-        }));
+        const cx = ((i % GOMOKU_N) * 100) / (GOMOKU_N - 1);
+        const cy = (Math.floor(i / GOMOKU_N) * 100) / (GOMOKU_N - 1);
+        stoneMarks.push(h('g', {
+          key: 's' + i, className: 'mg-stone-svg', 'data-last': i === last ? 'true' : 'false',
+        },
+          h('circle', {
+            className: 'mg-stone-core',
+            cx,
+            cy,
+            r: 3.3,
+            fill: board[i] === 1 ? 'url(#mg-stone-black)' : 'url(#mg-stone-white)',
+            stroke: 'rgba(20,20,22,.28)',
+            strokeWidth: 0.12,
+          }),
+          i === last
+            ? h('circle', {
+              className: 'mg-stone-ring', cx, cy, r: 3.65, fill: 'none', stroke: '#e11d48', strokeWidth: 0.3,
+            })
+            : null,
+        ));
       }
 
       return h('div', { className: 'mg-gomoku' },
@@ -2086,8 +2100,17 @@ window.__ModuleLoader__.load({
               h('svg', {
                 className: 'mg-gomoku-lines', viewBox: '0 0 100 100',
                 preserveAspectRatio: 'none', 'aria-hidden': 'true',
-              }, lines),
-              stones,
+              },
+                h('defs', null,
+                  h('radialGradient', { id: 'mg-stone-black', cx: '35%', cy: '30%', r: '75%' },
+                    h('stop', { offset: '0%', stopColor: '#4b4b4e' }),
+                    h('stop', { offset: '100%', stopColor: '#101012' })),
+                  h('radialGradient', { id: 'mg-stone-white', cx: '35%', cy: '30%', r: '75%' },
+                    h('stop', { offset: '0%', stopColor: '#ffffff' }),
+                    h('stop', { offset: '100%', stopColor: '#d8d8db' }))),
+                lines,
+                stoneMarks,
+              ),
             ),
           ),
         ),
@@ -2847,19 +2870,29 @@ window.__ModuleLoader__.load({
         }));
       });
 
-      const stones = [];
+      const stoneMarks = [];
       for (let i = 0; i < board.length; i += 1) {
         if (board[i] === 0) continue;
-        stones.push(h('div', {
-          key: i,
-          className: 'mg-go-stone',
-          'data-color': String(board[i]),
-          'data-last': i === lastMove ? 'true' : 'false',
-          style: {
-            left: (((i % GO_N) * 100) / (GO_N - 1)) + '%',
-            top: ((Math.floor(i / GO_N) * 100) / (GO_N - 1)) + '%',
-          },
-        }));
+        const cx = i % GO_N;
+        const cy = Math.floor(i / GO_N);
+        stoneMarks.push(h('g', {
+          key: 's' + i, className: 'mg-stone-svg', 'data-last': i === lastMove ? 'true' : 'false',
+        },
+          h('circle', {
+            className: 'mg-stone-core',
+            cx,
+            cy,
+            r: 0.41,
+            fill: board[i] === 1 ? 'url(#mg-stone-black)' : 'url(#mg-stone-white)',
+            stroke: 'rgba(20,20,22,.28)',
+            strokeWidth: 0.02,
+          }),
+          i === lastMove
+            ? h('circle', {
+              className: 'mg-stone-ring', cx, cy, r: 0.51, fill: 'none', stroke: '#e11d48', strokeWidth: 0.07,
+            })
+            : null,
+        ));
       }
 
       const blackArea = score ? score.black : 0;
@@ -2882,8 +2915,17 @@ window.__ModuleLoader__.load({
               h('svg', {
                 className: 'mg-go-lines', viewBox: '0 0 12 12',
                 preserveAspectRatio: 'none', 'aria-hidden': 'true',
-              }, lines),
-              stones,
+              },
+                h('defs', null,
+                  h('radialGradient', { id: 'mg-stone-black', cx: '35%', cy: '30%', r: '75%' },
+                    h('stop', { offset: '0%', stopColor: '#4b4b4e' }),
+                    h('stop', { offset: '100%', stopColor: '#101012' })),
+                  h('radialGradient', { id: 'mg-stone-white', cx: '35%', cy: '30%', r: '75%' },
+                    h('stop', { offset: '0%', stopColor: '#ffffff' }),
+                    h('stop', { offset: '100%', stopColor: '#d8d8db' }))),
+                lines,
+                stoneMarks,
+              ),
             ),
           ),
         ),
