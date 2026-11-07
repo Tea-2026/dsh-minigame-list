@@ -848,13 +848,26 @@ window.__ModuleLoader__.load({
       '.mg-xq-grid{position:relative;width:100%;height:100%;container-type:inline-size}',
       '.mg-xq-lines{position:absolute;inset:0;width:100%;height:100%;overflow:visible}',
       '.mg-xq-river{position:absolute;top:50%;transform:translateY(-50%);font-family:"KaiTi","STKaiti","Kaiti SC","楷体","Songti SC",serif;font-size:30px;font-size:9cqw;font-weight:600;line-height:1;letter-spacing:.18em;color:#7a5a34;opacity:.82;pointer-events:none;white-space:nowrap}',
-      '.mg-xq-piece{position:absolute;transform:translate(-50%,-50%);width:11%;aspect-ratio:1;height:auto;min-height:0;box-sizing:border-box;padding:0;border-radius:50%!important;clip-path:circle(50%);border:1px solid rgba(120,90,52,.85);background:radial-gradient(circle at 35% 30%,#fdf3df,#efd9b4);font-family:"KaiTi","STKaiti","Kaiti SC","楷体","Songti SC","Noto Serif SC",serif;font-size:28px;font-size:7.2cqw;font-weight:700;line-height:1;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;box-shadow:inset 0 0 0 2px rgba(120,90,52,.22),inset 0 1px 2px rgba(255,255,255,.55),0 2px 3px rgba(0,0,0,.28);transition:box-shadow .12s ease}',
+      '.mg-xq-piece{position:absolute;transform:translate(-50%,-50%);width:11%;aspect-ratio:1;height:auto;padding:0;border:0;background:none;cursor:pointer;overflow:visible;transition:transform .12s ease}',
+      '.mg-xq-disc{display:block;width:100%;height:100%;overflow:visible;transform-origin:center;transition:transform .12s ease,filter .12s ease}',
+      '.mg-xq-piece:hover .mg-xq-disc{transform:scale(1.03);filter:brightness(1.03)}',
+      '.mg-xq-piece:focus-visible{outline:none}',
+      '.mg-xq-piece:focus-visible .mg-xq-disc-face{stroke:#e11d48;stroke-width:3.4}',
+      '.mg-xq-char{font-family:"KaiTi","STKaiti","Kaiti SC","楷体","Songti SC","Noto Serif SC",serif;font-size:50px;font-weight:700;fill:currentColor;pointer-events:none}',
       '.mg-xq-red{color:#b91c1c}',
       '.mg-xq-black{color:#1f2937}',
-      '.mg-xq-piece.mg-xq-sel{box-shadow:inset 0 0 0 3px #e11d48,inset 0 0 0 1px rgba(120,90,52,.22),0 2px 3px rgba(0,0,0,.28)}',
-      '.mg-xq-piece[data-last="true"]{box-shadow:inset 0 0 0 2px rgba(225,29,72,.85),inset 0 0 0 1px rgba(120,90,52,.22),0 2px 3px rgba(0,0,0,.28)}',
-      '.mg-xq-dot{position:absolute;transform:translate(-50%,-50%);width:7.5%;aspect-ratio:1;padding:0;border:0;border-radius:50%;background:rgba(225,29,72,.4);cursor:pointer;z-index:2}',
-      '.mg-xq-dot-cap{background:transparent;box-shadow:inset 0 0 0 2px rgba(225,29,72,.85)}',
+      '.mg-xq-sel-halo{animation:mg-xq-halo-pulse 1.8s ease-in-out infinite;transform-box:fill-box;transform-origin:center}',
+      '.mg-xq-sel-ring{animation:mg-xq-sel-pulse 1.5s ease-in-out infinite}',
+      '.mg-xq-capture-ring{animation:mg-xq-capture-pulse 1.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}',
+      '.mg-xq-dot{position:absolute;transform:translate(-50%,-50%);width:7.5%;aspect-ratio:1;padding:0;border:0;background:none;cursor:pointer;z-index:2;overflow:visible}',
+      '.mg-xq-dot-cap{width:11%}',
+      '.mg-xq-dot:focus-visible{outline:2px solid #e11d48;outline-offset:2px;border-radius:50%}',
+      '.mg-xq-dot-svg{display:block;width:100%;height:100%;overflow:visible}',
+      '.mg-xq-dot-halo{transform-box:fill-box;transform-origin:center;animation:mg-xq-dot-pulse 1.6s ease-in-out infinite}',
+      '@keyframes mg-xq-sel-pulse{0%,100%{stroke-opacity:1}50%{stroke-opacity:.45}}',
+      '@keyframes mg-xq-halo-pulse{0%,100%{opacity:.55}50%{opacity:1}}',
+      '@keyframes mg-xq-capture-pulse{0%,100%{stroke-opacity:.95}50%{stroke-opacity:.35}}',
+      '@keyframes mg-xq-dot-pulse{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.28);opacity:.35}}',
       /* Go */
       '.mg-go{position:absolute;inset:0;display:flex;flex-direction:column;gap:6px;padding:6px}',
       '.mg-go-hud{flex:none;display:flex;align-items:center;justify-content:space-between;gap:8px;height:18px;font-size:11px;color:var(--dsw-alias-label-secondary);pointer-events:none}',
@@ -956,7 +969,7 @@ window.__ModuleLoader__.load({
       '.mg-heart[data-lost="true"]{opacity:.35;color:#cbd5e1}',
       '.mg-breakout-lostheart{position:absolute;top:0;width:16px;height:16px;color:#e11d48;fill:currentColor;pointer-events:none;animation:mg-breakout-heart-fall 1.1s linear forwards}',
       '@keyframes mg-breakout-heart-fall{0%{opacity:1;transform:translateY(0) rotate(0deg)}15%{transform:translateY(-18px) rotate(-40deg)}30%{transform:translateY(-12px) rotate(10deg)}45%{transform:translateY(12px) rotate(80deg)}60%{transform:translateY(52px) rotate(150deg)}75%{transform:translateY(112px) rotate(220deg)}88%{opacity:1;transform:translateY(188px) rotate(280deg)}100%{opacity:0;transform:translateY(280px) rotate(340deg)}}',
-      '@media (prefers-reduced-motion:reduce){.mg-panel,.mg-dock,.mg-view,.mg-card,.mg-console,.mg-launch,.mg-cbtn,.mg-caction,.mg-close,.mg-cell{transition:none}.mg-dot{animation:none}.mg-panel[data-shown="true"] .mg-card,.mg-panel[data-shown="true"] .mg-kicker-rule{animation:none}.mg-eng-progress span,.mg-eng-skeleton{animation:none}.mg-gomoku-stone[data-last="true"],.mg-go-stone[data-last="true"],.mg-xq-piece[data-last="true"],.mg-gomoku-over{animation:none}.mg-stone-core,.mg-stone-ring{animation:none}.mg-gomoku-stone[data-last="true"]::after,.mg-go-stone[data-last="true"]::after{animation:none;content:none}}',
+      '@media (prefers-reduced-motion:reduce){.mg-panel,.mg-dock,.mg-view,.mg-card,.mg-console,.mg-launch,.mg-cbtn,.mg-caction,.mg-close,.mg-cell{transition:none}.mg-dot{animation:none}.mg-panel[data-shown="true"] .mg-card,.mg-panel[data-shown="true"] .mg-kicker-rule{animation:none}.mg-eng-progress span,.mg-eng-skeleton{animation:none}.mg-gomoku-stone[data-last="true"],.mg-go-stone[data-last="true"],.mg-xq-piece[data-last="true"],.mg-gomoku-over{animation:none}.mg-stone-core,.mg-stone-ring{animation:none}.mg-xq-sel-halo,.mg-xq-sel-ring,.mg-xq-capture-ring,.mg-xq-dot-halo{animation:none}.mg-gomoku-stone[data-last="true"]::after,.mg-go-stone[data-last="true"]::after{animation:none;content:none}}',
     ].join('');
 
     /* Shelf entries. `w`/`h` are the frame the menu morphs into; `extra` is the
@@ -2525,26 +2538,94 @@ window.__ModuleLoader__.load({
         const left = (((i % XQ_W) * 100) / (XQ_W - 1)) + '%';
         const top = ((Math.floor(i / XQ_W) * 100) / (XQ_H - 1)) + '%';
         if (board[i]) {
+          const isSelected = selected === i;
+          const isLast = Boolean(lastMove && lastMove.to === i);
+          const isCapture = legal.indexOf(i) >= 0 && xqColor(board[i]) !== turn;
           pieces.push(h('button', {
             key: 'p' + i,
             type: 'button',
             className: 'mg-xq-piece ' + (xqColor(board[i]) === 'r' ? 'mg-xq-red' : 'mg-xq-black')
-              + (selected === i ? ' mg-xq-sel' : ''),
-            'data-last': lastMove && lastMove.to === i ? 'true' : 'false',
+              + (isSelected ? ' mg-xq-sel' : ''),
+            'data-last': isLast ? 'true' : 'false',
             style: { left, top },
             'aria-label': XQ_NAMES[board[i]],
             onClick: () => choose(i),
-          }, XQ_NAMES[board[i]]));
+          },
+            h('svg', { className: 'mg-xq-disc', viewBox: '0 0 100 100', 'aria-hidden': 'true' },
+              isSelected
+                ? h('circle', { className: 'mg-xq-sel-halo', cx: 50, cy: 50, r: 52, fill: 'rgba(225,29,72,.10)' })
+                : null,
+              h('circle', {
+                className: 'mg-xq-disc-face',
+                cx: 50,
+                cy: 50,
+                r: 46,
+                fill: 'url(#mg-xq-wood)',
+                stroke: 'rgba(120,90,52,.85)',
+                strokeWidth: 2.4,
+              }),
+              h('circle', {
+                className: 'mg-xq-disc-rim',
+                cx: 50,
+                cy: 50,
+                r: 39.5,
+                fill: 'none',
+                stroke: 'rgba(120,90,52,.25)',
+                strokeWidth: 1.6,
+              }),
+              h('text', {
+                className: 'mg-xq-char',
+                x: 50,
+                y: 53,
+                textAnchor: 'middle',
+                dominantBaseline: 'central',
+              }, XQ_NAMES[board[i]]),
+              isCapture
+                ? h('circle', {
+                  className: 'mg-xq-capture-ring',
+                  cx: 50,
+                  cy: 50,
+                  r: 54,
+                  fill: 'none',
+                  stroke: '#e11d48',
+                  strokeWidth: 3.2,
+                  strokeDasharray: '7 5',
+                })
+                : null,
+              isSelected
+                ? h('circle', {
+                  className: 'mg-xq-sel-ring', cx: 50, cy: 50, r: 49, fill: 'none', stroke: '#e11d48', strokeWidth: 3,
+                })
+                : null,
+              isLast && !isSelected
+                ? h('circle', {
+                  className: 'mg-xq-last-ring',
+                  cx: 50,
+                  cy: 50,
+                  r: 49.5,
+                  fill: 'none',
+                  stroke: 'rgba(225,29,72,.8)',
+                  strokeWidth: 2,
+                })
+                : null,
+            ),
+          ));
         }
         if (legal.indexOf(i) >= 0) {
+          const capture = Boolean(board[i]);
           dots.push(h('button', {
             key: 'd' + i,
             type: 'button',
-            className: 'mg-xq-dot' + (board[i] ? ' mg-xq-dot-cap' : ''),
+            className: 'mg-xq-dot' + (capture ? ' mg-xq-dot-cap' : ''),
             style: { left, top },
-            'aria-label': 'move',
+            'aria-label': capture ? 'capture' : 'move',
             onClick: () => moveTo(i),
-          }));
+          },
+            capture ? null : h('svg', { className: 'mg-xq-dot-svg', viewBox: '0 0 40 40', 'aria-hidden': 'true' },
+              h('circle', { className: 'mg-xq-dot-halo', cx: 20, cy: 20, r: 16, fill: 'rgba(225,29,72,.12)' }),
+              h('circle', { className: 'mg-xq-dot-core', cx: 20, cy: 20, r: 5.6, fill: '#e11d48' }),
+            ),
+          ));
         }
       }
 
@@ -2598,7 +2679,13 @@ window.__ModuleLoader__.load({
               h('svg', {
                 className: 'mg-xq-lines', viewBox: '0 0 8 9',
                 preserveAspectRatio: 'none', 'aria-hidden': 'true',
-              }, lines),
+              },
+                h('defs', null,
+                  h('radialGradient', { id: 'mg-xq-wood', cx: '35%', cy: '30%', r: '80%' },
+                    h('stop', { offset: '0%', stopColor: '#fdf3df' }),
+                    h('stop', { offset: '100%', stopColor: '#efd9b4' }))),
+                lines,
+              ),
               h('span', { className: 'mg-xq-river', style: { left: '18%' } }, '楚河'),
               h('span', { className: 'mg-xq-river', style: { right: '18%' } }, '汉界'),
               pieces,
