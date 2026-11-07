@@ -41,7 +41,7 @@
 
 | 引擎 | 游戏 | 协议 | 下载 |
 | --- | --- | --- | --- |
-| Pikafish | 象棋 | UCI | 53.6 MB，7z（需要系统里有 7z） |
+| Pikafish | 象棋 | UCI | 24.6 MB，7z（需要系统里有 7z） |
 | Rapfi | 五子棋 | Gomocup | 36.8 MB，7z（需要系统里有 7z） |
 | KataGo | 围棋 | GTP | 约 15 MB（Eigen CPU 版 + b6c96 小模型） |
 

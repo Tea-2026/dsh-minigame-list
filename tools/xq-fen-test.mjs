@@ -9,8 +9,9 @@ const post = async (path, body) => (await fetch(base + path, { method: 'POST', h
 
 const rows = ['rnbakabnr', '.........', '.c.....c.', 'p.p.p.p.p', '.........', '.........', 'P.P.P.P.P', '.C.....C.', '.........', 'RNBAKABNR'];
 const board = rows.join('').split('').map((c) => (c === '.' ? '' : c));
-const fen = rows.join('/') + ' b - - 0 1';
+const fen = 'rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR b - - 0 1';
 const move = await post('/move', { id: 'xiangqi', fen, movetime: 500 });
+if (move.error) throw new Error(move.error);
 console.log('fen', fen, 'bestmove', move.bestmove);
 const m = /^([a-i])([0-9])([a-i])([0-9])/.exec(move.bestmove || '');
 if (!m) throw new Error('bad move format');

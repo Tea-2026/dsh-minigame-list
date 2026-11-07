@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { loadManifest } from '../lib/engine-store.mjs';
 import { startSidecar } from '../sidecar.mjs';
 
-const root = fileURLToPath(new URL('../dsh-minigame-list/', import.meta.url));
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const src = fs.readFileSync(path.join(root, 'client.js'), 'utf8');
 const logic = src.slice(src.indexOf('const XQ_W = 9;'), src.indexOf('/* ---- Go ---- */'));
 const ai = src.slice(src.indexOf('const XQ_SETTINGS_KEY'), src.indexOf('function XiangqiGame('));
