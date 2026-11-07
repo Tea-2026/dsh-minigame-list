@@ -19,6 +19,35 @@ window.__ModuleLoader__.load({
       open: '打开小游戏',
       close: '关闭',
       settingsTitle: '主题',
+      engineTitle: 'AI 引擎',
+      engineServiceOn: '宿主服务已连接',
+      engineServiceOff: '宿主服务未连接',
+      engineServiceHint: '重启 Harness 后自动就绪',
+      engineOfflineTitle: '本地引擎服务还没起来',
+      engineOfflineText: '引擎服务跑在 Harness 宿主里，宿主只在插件加载时启动一次。重启 Harness，或在插件管理里禁用再启用这个插件，服务起来后会自动连上。',
+      engineRetry: '重试连接',
+      engineRefresh: '刷新',
+      engineEmpty: '没有可用的引擎',
+      engineTierStrong: '强力',
+      engineTierLight: '轻量',
+      engineMissing: '未安装',
+      engineInstalled: '已安装',
+      engineStarting: '启动中',
+      engineReady: '运行中',
+      engineThinking: '思考中',
+      engineError: '异常',
+      engineInstall: '下载',
+      engineWarm: '预热',
+      engineStop: '停用',
+      engineRemove: '删除',
+      engineInstalling: '下载中…',
+      engineWarming: '预热中…',
+      engineStopping: '停用中…',
+      engineRemoving: '删除中…',
+      engineLifeTitle: '引擎生命周期',
+      engineIdleHint: '引擎随对局启动，空闲 10 分钟后退出；宿主服务随 Harness 启动。',
+      engineActionFailed: '操作失败',
+
       themeColor: '主题色',
       custom: '自定义',
       solid: '纯色',
@@ -147,6 +176,35 @@ window.__ModuleLoader__.load({
       open: 'Open mini games',
       close: 'Close',
       settingsTitle: 'Theme',
+      engineTitle: 'AI engines',
+      engineServiceOn: 'Host service connected',
+      engineServiceOff: 'Host service offline',
+      engineServiceHint: 'Ready after a Harness restart',
+      engineOfflineTitle: 'The local engine service is not running',
+      engineOfflineText: 'The service lives in the Harness host, which starts it once at load. Restart Harness, or disable and re-enable this plugin; the panel reconnects automatically.',
+      engineRetry: 'Retry connection',
+      engineRefresh: 'Refresh',
+      engineEmpty: 'No engines available',
+      engineTierStrong: 'Strong',
+      engineTierLight: 'Light',
+      engineMissing: 'Not installed',
+      engineInstalled: 'Installed',
+      engineStarting: 'Starting',
+      engineReady: 'Running',
+      engineThinking: 'Thinking',
+      engineError: 'Error',
+      engineInstall: 'Download',
+      engineWarm: 'Warm up',
+      engineStop: 'Stop',
+      engineRemove: 'Remove',
+      engineInstalling: 'Downloading…',
+      engineWarming: 'Warming up…',
+      engineStopping: 'Stopping…',
+      engineRemoving: 'Removing…',
+      engineLifeTitle: 'Engine lifecycle',
+      engineIdleHint: 'Engines start with a match and exit after 10 idle minutes; the host service starts with Harness.',
+      engineActionFailed: 'Action failed',
+
       themeColor: 'Theme color',
       custom: 'Custom',
       solid: 'Solid',
@@ -273,6 +331,7 @@ window.__ModuleLoader__.load({
 
     const MENU = { w: 350, h: 460 };
     const SETTINGS_FRAME = { w: 380, h: 580 };
+    const ENGINE_FRAME = { w: 380, h: 400 };
     const SNAKE_COLS = 20;
     const SNAKE_ROWS = 15;
     const BEST_KEY = 'dsh-minigame-list.snake.best';
@@ -599,6 +658,67 @@ window.__ModuleLoader__.load({
       '.mg-set-reset{display:flex;align-items:center;justify-content:center;gap:7px;height:44px;margin-top:auto;padding:0;border:0;border-top:1px solid #eceef1;border-radius:0;background:transparent;font-size:12px;font-weight:600;color:#5b6470;cursor:pointer;transition:background .14s ease,color .14s ease}',
       '.mg-set-reset:hover{background:#f7f8fa;color:#0f1115}',
       '.mg-set-reset:focus-visible{outline:2px solid #0f1115;outline-offset:-4px}',
+      /* AI engines */
+      '.mg-engines{overflow:auto;background:#ffffff;color:#0f1115;scrollbar-width:thin;scrollbar-color:#d8dbe1 transparent;scrollbar-gutter:stable}',
+      '.mg-engines::-webkit-scrollbar{width:8px;height:8px}',
+      '.mg-engines::-webkit-scrollbar-thumb{background:#dde0e6;border:2px solid #ffffff;border-radius:999px}',
+      '.mg-eng-inner{display:flex;flex-direction:column;gap:14px;min-height:100%;box-sizing:border-box;padding:16px 20px 18px}',
+      '.mg-eng-head{display:flex;align-items:center;gap:10px}',
+      '.mg-eng-service{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #eceef1;border-radius:12px;background:#f7f8fa}',
+      '.mg-eng-dot{flex:none;width:8px;height:8px;border-radius:50%;background:#a0a7b1;box-shadow:0 0 0 4px rgba(160,167,177,.12);transition:background .16s ease,box-shadow .16s ease}',
+      '.mg-eng-service[data-online="true"] .mg-eng-dot{background:#16a34a;box-shadow:0 0 0 4px rgba(22,163,74,.12)}',
+      '.mg-eng-service-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px}',
+      '.mg-eng-service-title{font-size:12px;font-weight:650;line-height:1.2;color:#0f1115}',
+      '.mg-eng-service-sub{font:500 9.5px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.02em;color:#8b929c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+      '.mg-eng-refresh{flex:none;height:26px;padding:0 10px;border:1px solid #dcdfe4;border-radius:999px;background:#ffffff;font-size:10.5px;font-weight:600;color:#0f1115;cursor:pointer;transition:border-color .14s ease,background .14s ease}',
+      '.mg-eng-refresh:hover{border-color:#0f1115}',
+      '.mg-eng-refresh:focus-visible{outline:2px solid #0f1115;outline-offset:2px}',
+      '.mg-eng-offline{display:flex;flex-direction:column;align-items:flex-start;gap:9px;padding:14px;border:1px dashed #dcdfe4;border-radius:12px;background:#fbfcfd}',
+      '.mg-eng-offline-title{font-size:13px;font-weight:650;line-height:1.3;color:#0f1115}',
+      '.mg-eng-offline-text{margin:0;font-size:10.5px;line-height:1.7;color:#6b7480}',
+      '.mg-eng-body{display:flex;flex-direction:column;gap:14px}',
+      '.mg-eng-sec{display:flex;flex-direction:column;gap:9px}',
+      '.mg-eng-sec-head{display:flex;align-items:center;gap:8px}',
+      '.mg-eng-sec-label{font:600 9.5px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.16em;color:#5b6470}',
+      '.mg-eng-rule{flex:1 1 auto;height:1px;background:#eceef1}',
+      '.mg-eng-sec-count{font:600 9px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#a0a7b1}',
+      '.mg-eng-card{display:flex;flex-direction:column;gap:10px;padding:12px;border:1px solid #e6e8ec;border-radius:12px;background:#ffffff}',
+      '.mg-eng-card[data-state="missing"]{background:#fbfcfd}',
+      '.mg-eng-card-top{display:flex;align-items:center;gap:10px}',
+      '.mg-eng-keycap{flex:none;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:12px;background:#f4f5f7;color:#4b5563}',
+      '.mg-eng-id{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:3px}',
+      '.mg-eng-name{font-size:13px;font-weight:650;line-height:1.2;color:#0f1115;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+      '.mg-eng-meta{font:500 9.5px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#8b929c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+      '.mg-eng-badge{flex:none;display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:999px;background:#f4f5f7;font-size:9.5px;font-weight:600;color:#5b6470;white-space:nowrap}',
+      '.mg-eng-badge i{width:5px;height:5px;border-radius:50%;background:#a0a7b1}',
+      '.mg-eng-badge[data-state="ready"]{background:#e9f6ee;color:#33403a}',
+      '.mg-eng-badge[data-state="ready"] i{background:#16a34a}',
+      '.mg-eng-badge[data-state="thinking"]{background:#fef3c7;color:#92400e}',
+      '.mg-eng-badge[data-state="thinking"] i{background:#d97706}',
+      '.mg-eng-badge[data-state="starting"]{background:#eff6ff;color:#1d4ed8}',
+      '.mg-eng-badge[data-state="starting"] i{background:#2563eb}',
+      '.mg-eng-badge[data-state="error"]{background:#fee2e2;color:#991b1b}',
+      '.mg-eng-badge[data-state="error"] i{background:#dc2626}',
+      '.mg-eng-actions{display:flex;align-items:center;gap:7px}',
+      '.mg-eng-btn{height:30px;padding:0 12px;border:1px solid #dcdfe4;border-radius:9px;background:#ffffff;font-size:11px;font-weight:600;color:#0f1115;cursor:pointer;transition:border-color .14s ease,background .14s ease,color .14s ease}',
+      '.mg-eng-btn:hover{border-color:#0f1115}',
+      '.mg-eng-btn:focus-visible{outline:2px solid #0f1115;outline-offset:2px}',
+      '.mg-eng-btn[disabled]{opacity:.45;cursor:default}',
+      '.mg-eng-primary{background:#0f1115;border-color:#0f1115;color:#ffffff}',
+      '.mg-eng-primary:hover{background:#000000;border-color:#000000}',
+      '.mg-eng-primary[disabled]{opacity:.8}',
+      '.mg-eng-danger{margin-left:auto;border-color:#f0c9c9;color:#b91c1c}',
+      '.mg-eng-danger:hover{background:#fef2f2;border-color:#dc2626}',
+      '.mg-eng-progress{height:2px;border-radius:2px;background:#eceef1;overflow:hidden}',
+      '.mg-eng-progress span{display:block;width:38%;height:100%;border-radius:2px;background:#0f1115;animation:mg-eng-bar 1.1s ease-in-out infinite}',
+      '@keyframes mg-eng-bar{0%{transform:translateX(-120%)}100%{transform:translateX(320%)}}',
+      '.mg-eng-empty{padding:18px 0;text-align:center;font:500 10.5px/1.6 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#8b929c}',
+      '.mg-eng-skeleton{height:64px;border-radius:12px;background:linear-gradient(90deg,#f4f5f7 25%,#fbfcfd 37%,#f4f5f7 63%);background-size:400% 100%;animation:mg-eng-shimmer 1.3s ease-in-out infinite}',
+      '@keyframes mg-eng-shimmer{0%{background-position:100% 0}100%{background-position:0 0}}',
+      '.mg-eng-alert{padding:8px 10px;border-radius:9px;background:#fef2f2;color:#991b1b;font-size:10.5px;line-height:1.5}',
+      '.mg-eng-note{display:flex;flex-direction:column;gap:3px;margin-top:2px;padding:10px 12px;border:1px solid #eceef1;border-radius:12px;background:#f7f8fa}',
+      '.mg-eng-note-label{font:600 9.5px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.14em;color:#5b6470}',
+      '.mg-eng-note-text{font-size:10px;line-height:1.6;color:#8b929c}',
       /* Dock texture */
       '.mg-tx-wrap{position:absolute;inset:0;overflow:hidden;border-radius:inherit;pointer-events:none;-webkit-mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.18) 24%,#000 62%);mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.18) 24%,#000 62%)}',
       '.mg-dock[data-mode="menu"] .mg-tx-wrap{display:none}',
@@ -819,7 +939,7 @@ window.__ModuleLoader__.load({
       '.mg-heart[data-lost="true"]{opacity:.35;color:#cbd5e1}',
       '.mg-breakout-lostheart{position:absolute;top:0;width:16px;height:16px;color:#e11d48;fill:currentColor;pointer-events:none;animation:mg-breakout-heart-fall 1.1s linear forwards}',
       '@keyframes mg-breakout-heart-fall{0%{opacity:1;transform:translateY(0) rotate(0deg)}15%{transform:translateY(-18px) rotate(-40deg)}30%{transform:translateY(-12px) rotate(10deg)}45%{transform:translateY(12px) rotate(80deg)}60%{transform:translateY(52px) rotate(150deg)}75%{transform:translateY(112px) rotate(220deg)}88%{opacity:1;transform:translateY(188px) rotate(280deg)}100%{opacity:0;transform:translateY(280px) rotate(340deg)}}',
-      '@media (prefers-reduced-motion:reduce){.mg-panel,.mg-dock,.mg-view,.mg-card,.mg-console,.mg-launch,.mg-cbtn,.mg-caction,.mg-close,.mg-cell{transition:none}.mg-dot{animation:none}.mg-panel[data-shown="true"] .mg-card,.mg-panel[data-shown="true"] .mg-kicker-rule{animation:none}}',
+      '@media (prefers-reduced-motion:reduce){.mg-panel,.mg-dock,.mg-view,.mg-card,.mg-console,.mg-launch,.mg-cbtn,.mg-caction,.mg-close,.mg-cell{transition:none}.mg-dot{animation:none}.mg-panel[data-shown="true"] .mg-card,.mg-panel[data-shown="true"] .mg-kicker-rule{animation:none}.mg-eng-progress span,.mg-eng-skeleton{animation:none}}',
     ].join('');
 
     /* Shelf entries. `w`/`h` are the frame the menu morphs into; `extra` is the
@@ -2080,36 +2200,74 @@ window.__ModuleLoader__.load({
       return scored[0].move;
     }
 
-    let mgPortPromise = null;
-    function mgSidecarPort() {
-      if (!mgPortPromise) {
-        mgPortPromise = (async () => {
-          for (let port = 38651; port <= 38661; port += 1) {
-            try {
-              const res = await fetch('http://127.0.0.1:' + port + '/health', { signal: AbortSignal.timeout(600) });
-              if (res.ok) return port;
-            } catch (error) {
-              /* try the next port */
-            }
-          }
-          mgPortPromise = null;
-          return 0;
-        })();
+    /* Engine client: one discovery cache and one request helper shared by the
+     * game AI and the engine panel. No service just means "fall back". */
+    const ENGINE_PORTS = [];
+    for (let port = 38651; port <= 38661; port += 1) ENGINE_PORTS.push(port);
+    const ENGINE_PROBE_TTL = 5000;
+    let enginePort = 0;
+    let engineProbe = null;
+    let engineProbedAt = 0;
+
+    function engineForget() {
+      enginePort = 0;
+      engineProbe = null;
+      engineProbedAt = 0;
+    }
+
+    function engineHealth(port) {
+      return fetch('http://127.0.0.1:' + port + '/health', { signal: AbortSignal.timeout(600) })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((json) => (json && json.ok ? port : 0))
+        .catch(() => 0);
+    }
+
+    function mgEnginePort(force) {
+      if (force) engineForget();
+      if (enginePort) return Promise.resolve(enginePort);
+      if (engineProbe) return engineProbe;
+      if (Date.now() - engineProbedAt < ENGINE_PROBE_TTL) return Promise.resolve(0);
+      engineProbe = Promise.all(ENGINE_PORTS.map(engineHealth)).then((ports) => {
+        const found = ports.find(Boolean) || 0;
+        engineProbedAt = Date.now();
+        if (found) enginePort = found;
+        engineProbe = null;
+        return found;
+      });
+      return engineProbe;
+    }
+
+    async function engineCall(port, path, body, timeout) {
+      const res = await fetch('http://127.0.0.1:' + port + '/' + path, {
+        method: body ? 'POST' : 'GET',
+        headers: body ? { 'content-type': 'application/json' } : undefined,
+        body: body ? JSON.stringify(body) : undefined,
+        signal: timeout ? AbortSignal.timeout(timeout) : undefined,
+      });
+      let json = {};
+      try {
+        json = await res.json();
+      } catch (error) {
+        json = {};
       }
-      return mgPortPromise;
+      if (!res.ok || json.error) {
+        const failure = new Error(json.error || ('HTTP ' + res.status));
+        failure.code = json.code;
+        throw failure;
+      }
+      return json;
     }
 
     async function mgEngineMove(id, fen, movetime) {
-      const port = await mgSidecarPort();
+      const port = await mgEnginePort();
       if (!port) return null;
-      const res = await fetch('http://127.0.0.1:' + port + '/move', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ id, fen, movetime }),
-      });
-      const json = await res.json();
-      if (json.error) return null;
-      return json.bestmove || null;
+      try {
+        const json = await engineCall(port, 'move', { id, fen, movetime }, 6000);
+        return json.bestmove || null;
+      } catch (error) {
+        if (!error.code) engineForget();
+        return null;
+      }
     }
 
     function xqFen(board, color) {
@@ -4407,133 +4565,216 @@ window.__ModuleLoader__.load({
       );
     }
 
-    function useSidecarPort(tick) {
+    function useEngineService(active, tick) {
       const [port, setPort] = useState(0);
       useEffect(() => {
+        if (!active) return undefined;
         let dead = false;
         (async () => {
-          for (let p = 38651; p <= 38661; p += 1) {
-            try {
-              const res = await fetch('http://127.0.0.1:' + p + '/health', { signal: AbortSignal.timeout(800) });
-              if (res.ok) {
-                if (!dead) setPort(p);
-                return;
-              }
-            } catch (error) {
-              /* try the next port */
-            }
-          }
+          const found = await mgEnginePort(true);
+          if (!dead) setPort(found);
         })();
         return () => { dead = true; };
-      }, [tick]);
+      }, [active, tick]);
       return port;
     }
 
-    function EnginePanel(props) {
-      const [retry, setRetry] = useState(0);
-      const port = useSidecarPort(retry);
-      useEffect(() => {
-        const bump = () => setRetry((value) => value + 1);
-        const onVisible = () => { if (!document.hidden) bump(); };
-        window.addEventListener('focus', bump);
-        document.addEventListener('visibilitychange', onVisible);
-        return () => {
-          window.removeEventListener('focus', bump);
-          document.removeEventListener('visibilitychange', onVisible);
-        };
-      }, []);
-      useEffect(() => {
-        if (port) return undefined;
-        const id = window.setInterval(() => setRetry((value) => value + 1), 3000);
-        return () => window.clearInterval(id);
-      }, [port]);
+    function useEngineCatalog(port) {
       const [list, setList] = useState([]);
-      const [busy, setBusy] = useState('');
+      const [loading, setLoading] = useState(false);
       const [error, setError] = useState('');
-      const load = async () => {
-        if (!port) return;
+      const load = useCallback(async () => {
+        if (!port) {
+          setList([]);
+          return;
+        }
+        setLoading(true);
         try {
-          const res = await fetch('http://127.0.0.1:' + port + '/engines');
-          const json = await res.json();
+          const json = await engineCall(port, 'engines');
           setList(json.engines || []);
           setError('');
-        } catch (error) {
-          setError('引擎服务响应失败');
+        } catch (failure) {
+          setError(failure.message || '');
+        } finally {
+          setLoading(false);
         }
+      }, [port]);
+      useEffect(() => { load(); }, [load]);
+      return { list, loading, error, reload: load };
+    }
+
+    const ENGINE_GAME_ICON = { xiangqi: XiangqiIcon, gomoku: GomokuIcon, go: GoIcon };
+
+    function engineTierKey(tier) {
+      return tier === 'light' ? 'engineTierLight' : 'engineTierStrong';
+    }
+
+    function engineStateKey(item) {
+      if (!item.installed) return 'missing';
+      return item.state || 'stopped';
+    }
+
+    function engineStateLabel(t, item) {
+      const state = engineStateKey(item);
+      if (state === 'missing') return t('engineMissing');
+      if (state === 'starting') return t('engineStarting');
+      if (state === 'ready') return t('engineReady');
+      if (state === 'thinking') return t('engineThinking');
+      if (state === 'error') return t('engineError');
+      return t('engineInstalled');
+    }
+
+    function engineSize(bytes) {
+      if (!bytes) return '';
+      const mb = bytes / (1024 * 1024);
+      return (mb >= 10 ? String(Math.round(mb)) : mb.toFixed(1)) + ' MB';
+    }
+
+    function EnginePanel(props) {
+      const { t, active } = props;
+      const [tick, setTick] = useState(0);
+      const port = useEngineService(active, tick);
+      const { list, loading, error, reload } = useEngineCatalog(port);
+      const [busy, setBusy] = useState('');
+      const [actionError, setActionError] = useState('');
+
+      useEffect(() => {
+        if (!active || port) return undefined;
+        const id = window.setInterval(() => setTick((value) => value + 1), 3000);
+        return () => window.clearInterval(id);
+      }, [active, port]);
+
+      const retry = () => setTick((value) => value + 1);
+      const refresh = () => {
+        setTick((value) => value + 1);
+        reload();
       };
-      useEffect(() => { load(); }, [port]);
+
       const act = async (kind, id) => {
+        if (!port || busy) return;
         setBusy(id + ':' + kind);
-        setError('');
+        setActionError('');
         try {
-          const res = await fetch('http://127.0.0.1:' + port + '/' + kind, {
-            method: 'POST',
-            headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({ id }),
-          });
-          const json = await res.json();
-          if (json.error) setError(json.error);
-        } catch (error) {
-          setError('操作失败：' + (error && error.message ? error.message : error));
+          await engineCall(port, kind, { id }, kind === 'install' ? 600000 : 30000);
+          await reload();
+        } catch (failure) {
+          setActionError(failure.message || t('engineActionFailed'));
+        } finally {
+          setBusy('');
         }
-        setBusy('');
-        await load();
       };
+
+      const groups = [];
+      for (const item of list) {
+        const group = groups.find((entry) => entry.game === item.game);
+        if (group) group.items.push(item);
+        else groups.push({ game: item.game, items: [item] });
+      }
+
+      const card = (item) => {
+        const state = engineStateKey(item);
+        const busyHere = busy.indexOf(item.id + ':') === 0;
+        const busyKind = busyHere ? busy.split(':')[1] : '';
+        const meta = [
+          t(engineTierKey(item.tier)),
+          item.license,
+          item.bytes ? engineSize(item.bytes) : item.size,
+        ].filter(Boolean).join(' · ');
+        const Icon = ENGINE_GAME_ICON[item.game] || EngineGlyph;
+        return h('article', { className: 'mg-eng-card', key: item.id, 'data-state': state },
+          h('div', { className: 'mg-eng-card-top' },
+            h('span', { className: 'mg-eng-keycap', 'aria-hidden': 'true' }, h(Icon, { size: 21 })),
+            h('div', { className: 'mg-eng-id' },
+              h('span', { className: 'mg-eng-name' }, item.label || item.id),
+              meta ? h('span', { className: 'mg-eng-meta' }, meta) : null,
+            ),
+            h('span', { className: 'mg-eng-badge', 'data-state': state },
+              h('i', { 'aria-hidden': 'true' }),
+              engineStateLabel(t, item),
+            ),
+          ),
+          h('div', { className: 'mg-eng-actions' },
+            !item.installed
+              ? h('button', {
+                type: 'button', className: 'mg-eng-btn mg-eng-primary',
+                disabled: Boolean(busy),
+                onClick: () => act('install', item.id),
+              }, busyKind === 'install' ? t('engineInstalling') : t('engineInstall'))
+              : item.state === 'stopped'
+                ? h('button', {
+                  type: 'button', className: 'mg-eng-btn mg-eng-primary',
+                  disabled: Boolean(busy),
+                  onClick: () => act('warm', item.id),
+                }, busyKind === 'warm' ? t('engineWarming') : t('engineWarm'))
+                : h('button', {
+                  type: 'button', className: 'mg-eng-btn',
+                  disabled: Boolean(busy),
+                  onClick: () => act('stop', item.id),
+                }, busyKind === 'stop' ? t('engineStopping') : t('engineStop')),
+            item.installed
+              ? h('button', {
+                type: 'button', className: 'mg-eng-btn mg-eng-danger',
+                disabled: Boolean(busy),
+                onClick: () => act('remove', item.id),
+              }, busyKind === 'remove' ? t('engineRemoving') : t('engineRemove'))
+              : null,
+          ),
+          busyKind === 'install'
+            ? h('div', { className: 'mg-eng-progress', 'aria-hidden': 'true' }, h('span', null))
+            : null,
+        );
+      };
+
       return h('div', { className: 'mg-eng-inner' },
         h('header', { className: 'mg-eng-head' },
-          h('button', { type: 'button', className: 'mg-set-back', 'aria-label': '返回', onClick: props.onClose }, '‹'),
-          h('h2', { className: 'mg-set-title' }, 'AI 引擎'),
+          h('button', {
+            type: 'button', className: 'mg-set-back', 'aria-label': t('back'),
+            onClick: props.onClose,
+          }, h(BackGlyph, { size: 14 })),
+          h('h2', { className: 'mg-set-title' }, t('engineTitle')),
           h('span', { className: 'mg-set-kicker' }, 'ENGINES'),
         ),
-        !port
-          ? h('div', { className: 'mg-eng-note' },
-            '本地引擎服务未连接。重启 Harness 让宿主加载插件后会自动就绪；也可以点重试。',
-            h('div', { style: { marginTop: '8px' } },
-              h('button', {
-                type: 'button', className: 'mg-eng-btn', onClick: () => setRetry((value) => value + 1),
-              }, '重试连接'),
-            ),
-          )
-          : h('div', { className: 'mg-eng-list' },
-            list.map((item) => h('div', { className: 'mg-eng-card', key: item.id },
-              h('div', { className: 'mg-eng-top' },
-                h('div', null,
-                  h('div', { className: 'mg-eng-name' }, item.label || item.id),
-                  h('div', { className: 'mg-eng-game' }, item.game),
-                ),
-                h('span', { className: 'mg-eng-state mg-eng-' + (item.installed ? item.state : 'missing') },
-                  item.installed ? (item.state === 'ready' ? '运行中' : item.state === 'thinking' ? '思考中' : item.state === 'starting' ? '启动中' : '已安装') : '未安装'),
-              ),
-              h('div', { className: 'mg-eng-actions' },
-                !item.installed
-                  ? h('button', {
-                    type: 'button', className: 'mg-eng-btn mg-eng-primary',
-                    disabled: !!busy,
-                    onClick: () => act('install', item.id),
-                  }, busy === item.id + ':install' ? '下载中…' : '下载')
-                  : h('button', {
-                    type: 'button', className: 'mg-eng-btn mg-eng-primary',
-                    disabled: !!busy || item.state !== 'stopped',
-                    onClick: () => act('warm', item.id),
-                  }, item.state === 'stopped' ? '预热' : '预热'),
-                item.installed
-                  ? h('button', {
-                    type: 'button', className: 'mg-eng-btn',
-                    disabled: !!busy || item.state === 'stopped',
-                    onClick: () => act('stop', item.id),
-                  }, '停用')
-                  : null,
-                item.installed
-                  ? h('button', {
-                    type: 'button', className: 'mg-eng-btn mg-eng-danger',
-                    disabled: !!busy,
-                    onClick: () => act('remove', item.id),
-                  }, '删除')
-                  : null,
-              ),
-            )),
-            error ? h('div', { className: 'mg-eng-note mg-eng-error' }, error) : null,
+        h('div', { className: 'mg-eng-service', 'data-online': port ? 'true' : 'false' },
+          h('span', { className: 'mg-eng-dot', 'aria-hidden': 'true' }),
+          h('div', { className: 'mg-eng-service-main' },
+            h('span', { className: 'mg-eng-service-title' }, port ? t('engineServiceOn') : t('engineServiceOff')),
+            h('span', { className: 'mg-eng-service-sub' }, port ? ('127.0.0.1:' + port) : t('engineServiceHint')),
           ),
+          port
+            ? h('button', { type: 'button', className: 'mg-eng-refresh', onClick: refresh }, t('engineRefresh'))
+            : null,
+        ),
+        !port
+          ? h('div', { className: 'mg-eng-offline' },
+            h('div', { className: 'mg-eng-offline-title' }, t('engineOfflineTitle')),
+            h('p', { className: 'mg-eng-offline-text' }, t('engineOfflineText')),
+            h('button', {
+              type: 'button', className: 'mg-eng-btn mg-eng-primary', onClick: retry,
+            }, t('engineRetry')),
+          )
+          : h('div', { className: 'mg-eng-body' },
+            loading && !list.length
+              ? h('div', { className: 'mg-eng-skeleton', 'aria-hidden': 'true' }, null)
+              : null,
+            !loading && !list.length
+              ? h('div', { className: 'mg-eng-empty' }, t('engineEmpty'))
+              : null,
+            groups.map((group) => h('section', { className: 'mg-eng-sec', key: group.game },
+              h('div', { className: 'mg-eng-sec-head' },
+                h('span', { className: 'mg-eng-sec-label' }, t(group.game) || group.game),
+                h('span', { className: 'mg-eng-rule', 'aria-hidden': 'true' }),
+                h('span', { className: 'mg-eng-sec-count' }, String(group.items.length)),
+              ),
+              group.items.map(card),
+            )),
+            error || actionError
+              ? h('div', { className: 'mg-eng-alert', role: 'alert' }, error || actionError)
+              : null,
+          ),
+        h('div', { className: 'mg-eng-note' },
+          h('span', { className: 'mg-eng-note-label' }, t('engineLifeTitle')),
+          h('span', { className: 'mg-eng-note-text' }, t('engineIdleHint')),
+        ),
       );
     }
 
@@ -4548,8 +4789,9 @@ window.__ModuleLoader__.load({
       const [open, setOpen] = useState(false);
       const [shown, setShown] = useState(false);
       const [closing, setClosing] = useState(false);
-      const [settings, setSettings] = useState(false);
-      const [engines, setEngines] = useState(false);
+      const [panel, setPanel] = useState('menu');
+      const settings = panel === 'settings';
+      const engines = panel === 'engines';
       const [theme, setTheme] = useState(mgThemeRead);
       const closeTimer = useRef(0);
       const [gameId, setGameId] = useState(null);
@@ -4568,7 +4810,7 @@ window.__ModuleLoader__.load({
       const game = gameId ? GAMES.filter((item) => item.id === gameId)[0] || null : null;
       const frame = game
         ? (game.Game && frameOverride ? frameOverride : gameFrame(game))
-        : (settings ? SETTINGS_FRAME : MENU);
+        : (settings ? SETTINGS_FRAME : (engines ? ENGINE_FRAME : MENU));
       const inGame = Boolean(game);
       const consoleMode = open && inGame;
       const saveTheme = (patch) => {
@@ -4640,6 +4882,7 @@ window.__ModuleLoader__.load({
         if (closeTimer.current) window.clearTimeout(closeTimer.current);
         closeTimer.current = window.setTimeout(() => {
           setOpen(false);
+          setPanel('menu');
           setClosing(false);
           if (gameId) {
             setPaused(true);
@@ -4698,7 +4941,7 @@ window.__ModuleLoader__.load({
       }, [open, closePanel]);
 
       const enterGame = useCallback((id) => {
-        setSettings(false);
+        setPanel('menu');
         setGameId(id);
         setPaused(false);
         setPauseReason('');
@@ -4769,7 +5012,7 @@ window.__ModuleLoader__.load({
           'aria-hidden': open ? 'false' : 'true',
           inert: open ? undefined : '',
           role: 'dialog',
-          'aria-label': inGame ? t(game.id) : (settings ? t('settingsTitle') : t('title')),
+          'aria-label': inGame ? t(game.id) : (settings ? t('settingsTitle') : (engines ? t('engineTitle') : t('title'))),
           style: { width: frame.w + 'px', height: frame.h + 'px', '--mg-accent': theme.theme, '--mg-on-accent': mgOnColor(theme.theme) },
         },
             h('div', {
@@ -4796,10 +5039,10 @@ window.__ModuleLoader__.load({
                   ),
                   h('button', {
                     type: 'button',
-                    className: 'mg-close mg-eng-btn-head',
-                    'aria-label': 'AI 引擎',
-                    title: 'AI 引擎',
-                    onClick: () => { setSettings(false); setEngines(true); },
+                    className: 'mg-close',
+                    'aria-label': t('engineTitle'),
+                    title: t('engineTitle'),
+                    onClick: () => setPanel('engines'),
                   },
                     h(EngineGlyph, { size: 20 }),
                   ),
@@ -4808,7 +5051,7 @@ window.__ModuleLoader__.load({
                     className: 'mg-close',
                     'aria-label': t('settingsTitle'),
                     title: t('settingsTitle'),
-                    onClick: () => setSettings(true),
+                    onClick: () => setPanel('settings'),
                   },
                     h(SettingsGlyph, { size: 20 }),
                   ),
@@ -4846,7 +5089,7 @@ window.__ModuleLoader__.load({
                 h('header', { className: 'mg-set-head' },
                   h('button', {
                     type: 'button', className: 'mg-set-back', 'aria-label': t('back'),
-                    onClick: () => setSettings(false),
+                    onClick: () => setPanel('menu'),
                   }, h(BackGlyph, { size: 14 })),
                   h('h2', { className: 'mg-set-title' }, t('settingsTitle')),
                   h('span', { className: 'mg-set-kicker' }, 'THEME'),
@@ -5020,7 +5263,7 @@ window.__ModuleLoader__.load({
               'aria-hidden': engines && !inGame ? 'false' : 'true',
               inert: engines && !inGame ? undefined : '',
             },
-              h(EnginePanel, { onClose: () => setEngines(false) }),
+              h(EnginePanel, { t, active: engines && !inGame, onClose: () => setPanel('menu') }),
             ),
             h('div', {
               className: 'mg-view mg-game',

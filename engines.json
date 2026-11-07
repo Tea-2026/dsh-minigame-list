@@ -3,6 +3,10 @@
     "xiangqi": {
       "game": "xiangqi",
       "label": "Fairy-Stockfish",
+      "tier": "strong",
+      "license": "GPL-3.0",
+      "size": "1.7 MB",
+      "protocol": "uci",
       "repo": "fairy-stockfish/Fairy-Stockfish",
       "asset": "fairy-stockfish_x86-64-bmi2\\.exe$",
       "args": [],

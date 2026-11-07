@@ -1,304 +1,209 @@
-﻿/* Local engine sidecar: an HTTP surface on 127.0.0.1 plus UCI process supervision.
- * The Client UI talks to this over fetch; engine processes are started lazily and
- * released after an idle timeout or when the Harness exits. */
+/* Local engine sidecar: a loopback HTTP surface in front of the UCI
+ * supervisors. The client discovers it on 127.0.0.1:38651–38661 and drives
+ * install / warm / stop / move through it. */
 import http from 'node:http';
-import { execFileSync, spawn } from 'node:child_process';
-import { existsSync, mkdirSync, rmSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { EngineSupervisor } from './lib/engine-supervisor.mjs';
+import { createEngineStore } from './lib/engine-store.mjs';
 
-const IDLE_MS = 10 * 60 * 1000;
-const CURL = process.platform === 'win32' ? ['curl', '--ssl-no-revoke'] : ['curl'];
-const PROTOCOL = 'dsh-minigame-sidecar/1';
+export const PROTOCOL = 'dsh-minigame-sidecar/1';
+const BODY_LIMIT = 64 * 1024;
+const LOCAL_ORIGIN = /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/i;
 
-function parseBody(req) {
+function readBody(req) {
   return new Promise((resolve, reject) => {
     let raw = '';
     req.on('data', (chunk) => {
       raw += chunk;
-      if (raw.length > 64 * 1024) reject(new Error('body too large'));
+      if (raw.length > BODY_LIMIT) {
+        req.destroy();
+        reject(new Error('request body is too large'));
+      }
     });
     req.on('end', () => {
       try {
         resolve(raw ? JSON.parse(raw) : {});
       } catch (error) {
-        reject(error);
+        reject(new Error('request body is not valid JSON'));
       }
     });
     req.on('error', reject);
   });
 }
 
-class Engine {
-  constructor(id, spec, idleMs) {
-    this.id = id;
-    this.spec = spec;
-    this.idleMs = idleMs;
-    this.proc = null;
-    this.state = 'stopped';
-    this.buffer = '';
-    this.waiters = [];
-    this.queue = Promise.resolve();
-    this.idleTimer = 0;
+function bodyId(body) {
+  const id = String((body && body.id) || '');
+  if (!id) {
+    const error = new Error('missing engine id');
+    error.code = 'bad-request';
+    throw error;
   }
-
-  emit(state) {
-    this.state = state;
-  }
-
-  touch() {
-    clearTimeout(this.idleTimer);
-    this.idleTimer = setTimeout(() => this.stop('idle'), this.idleMs);
-  }
-
-  expect(pattern, timeoutMs = 15000) {
-    return new Promise((resolve, reject) => {
-      const timer = setTimeout(() => {
-        this.waiters = this.waiters.filter((w) => w.resolve !== resolve);
-        reject(new Error('engine timeout waiting for ' + pattern));
-      }, timeoutMs);
-      this.waiters.push({ pattern, resolve, reject, timer });
-    });
-  }
-
-  feed(line) {
-    for (const waiter of this.waiters.slice()) {
-      if (waiter.pattern.test(line)) {
-        clearTimeout(waiter.timer);
-        this.waiters = this.waiters.filter((w) => w !== waiter);
-        waiter.resolve(line);
-      }
-    }
-  }
-
-  async start() {
-    if (this.proc) return;
-    this.emit('starting');
-    const proc = spawn(this.spec.exe, this.spec.args || [], { stdio: ['pipe', 'pipe', 'pipe'] });
-    this.proc = proc;
-    proc.stdout.setEncoding('utf8');
-    proc.stdout.on('data', (chunk) => {
-      this.buffer += chunk;
-      let at = this.buffer.indexOf('\n');
-      while (at >= 0) {
-        const line = this.buffer.slice(0, at).trim();
-        this.buffer = this.buffer.slice(at + 1);
-        if (line) this.feed(line);
-        at = this.buffer.indexOf('\n');
-      }
-    });
-    proc.stderr.setEncoding('utf8');
-    proc.stderr.on('data', () => {});
-    proc.on('exit', () => {
-      this.proc = null;
-      this.waiters.forEach((w) => {
-        clearTimeout(w.timer);
-        w.reject(new Error('engine exited'));
-      });
-      this.waiters = [];
-      this.emit('stopped');
-    });
-    proc.stdin.write('uci\n');
-    await this.expect(/^uciok/);
-    if (this.spec.variant) proc.stdin.write('setoption name UCI_Variant value ' + this.spec.variant + '\n');
-    proc.stdin.write('isready\n');
-    await this.expect(/^readyok/);
-    this.emit('ready');
-    this.touch();
-  }
-
-  async ensure() {
-    if (this.proc && this.state === 'ready') {
-      this.touch();
-      return;
-    }
-    if (!this.proc) await this.start();
-    else await this.expect(/^readyok/);
-  }
-
-  async move(fen, moves, movetime) {
-    const run = async () => {
-      await this.ensure();
-      this.touch();
-      this.emit('thinking');
-      const proc = this.proc;
-      const position = fen === 'startpos' ? 'position startpos' : 'position fen ' + fen;
-      proc.stdin.write(position + (moves && moves.length ? ' moves ' + moves.join(' ') : '') + '\n');
-      proc.stdin.write('go movetime ' + Math.max(20, Math.min(10000, movetime || 300)) + '\n');
-      const line = await this.expect(/^bestmove/, 15000);
-      this.emit('ready');
-      this.touch();
-      return line.split(/\s+/)[1] || null;
-    };
-    const result = this.queue.then(run, run);
-    this.queue = result.catch(() => {});
-    return result;
-  }
-
-  async stop() {
-    clearTimeout(this.idleTimer);
-    const proc = this.proc;
-    if (!proc) {
-      this.state = 'stopped';
-      return;
-    }
-    try {
-      proc.stdin.write('quit\n');
-    } catch (error) {
-      /* already gone */
-    }
-    await new Promise((resolve) => {
-      const timer = setTimeout(() => {
-        try { proc.kill(); } catch (error) { /* ignore */ }
-        resolve();
-      }, 3000);
-      proc.once('exit', () => {
-        clearTimeout(timer);
-        resolve();
-      });
-    });
-    this.proc = null;
-    this.emit('stopped');
-  }
+  return id;
 }
 
 export function startSidecar(options = {}) {
-  const idleMs = options.idleMs || IDLE_MS;
-  const specs = options.engines || {};
   const root = options.dir || '.';
-  const engineMap = new Map();
-  const getEngine = (id) => {
-    if (!specs[id]) throw new Error('unknown engine ' + id);
-    if (!engineMap.has(id)) engineMap.set(id, new Engine(id, specs[id], idleMs));
-    return engineMap.get(id);
-  };
-  const installed = (id) => existsSync(join(root, 'engines', id, 'engine.exe'));
+  const engines = options.engines || {};
+  const idleMs = options.idleMs || 10 * 60 * 1000;
+  const log = options.log || (() => {});
+  const store = createEngineStore({ root, engines, log });
+  const supervisors = new Map();
+  let actualPort = 0;
+  let closing = false;
 
-  const install = async (id) => {
-    const spec = specs[id];
-    if (!spec || !spec.repo) throw new Error('engine not installable');
-    const dir = join(root, 'engines', id);
-    mkdirSync(dir, { recursive: true });
-    /* Use the system curl so TLS goes through the OS trust store (VPN/proxy safe). */
-    const release = JSON.parse(execFileSync(CURL[0], [...CURL.slice(1), '-sL', '-H', 'user-agent: dsh-minigame-list', 'https://api.github.com/repos/' + spec.repo + '/releases/latest'], { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 }));
-    const pattern = new RegExp(spec.asset || 'x86-64.*\\.exe$');
-    const asset = (release.assets || []).find((item) => pattern.test(item.name));
-    if (!asset) throw new Error('no matching release asset');
-    const target = join(dir, 'engine.exe');
-    execFileSync(CURL[0], [...CURL.slice(1), '-sL', '-o', target, asset.browser_download_url], { stdio: 'pipe', maxBuffer: 8 * 1024 * 1024 });
-    const bytes = statSync(target).size;
-    if (!bytes) throw new Error('download failed');
-    return { id, bytes, tag: release.tag_name };
-  };
-
-  const remove = async (id) => {
-    if (!specs[id]) throw new Error('unknown engine ' + id);
-    const engine = engineMap.get(id);
-    if (engine) await engine.stop();
-    rmSync(join(root, 'engines', id), { recursive: true, force: true });
-    return { id, installed: false };
+  const supervisor = (id) => {
+    if (!engines[id]) {
+      const error = new Error('unknown engine ' + id);
+      error.code = 'unknown-engine';
+      throw error;
+    }
+    if (!supervisors.has(id)) {
+      supervisors.set(id, new EngineSupervisor({ id, spec: engines[id], idleMs, log }));
+    }
+    return supervisors.get(id);
   };
 
   const server = http.createServer(async (req, res) => {
+    const origin = req.headers.origin;
+    if (origin && !LOCAL_ORIGIN.test(origin)) {
+      res.writeHead(403, { 'content-type': 'application/json; charset=utf-8' });
+      res.end(JSON.stringify({ error: 'origin not allowed', code: 'origin' }));
+      return;
+    }
+    const cors = origin
+      ? { 'access-control-allow-origin': origin, vary: 'origin' }
+      : {};
     const send = (code, data) => {
-      res.writeHead(code, {
+      res.writeHead(code, Object.assign({
         'content-type': 'application/json; charset=utf-8',
-        'access-control-allow-origin': req.headers.origin || '*',
-        'access-control-allow-headers': 'content-type, x-dsh-minigame',
         'cache-control': 'no-store',
-      });
+        'x-content-type-options': 'nosniff',
+      }, cors));
       res.end(JSON.stringify(data));
     };
+
     if (req.method === 'OPTIONS') {
-      res.writeHead(204, {
-        'access-control-allow-origin': req.headers.origin || '*',
+      res.writeHead(204, Object.assign({
         'access-control-allow-methods': 'GET, POST, OPTIONS',
-        'access-control-allow-headers': 'content-type, x-dsh-minigame',
-      });
+        'access-control-allow-headers': 'content-type',
+        'access-control-max-age': '600',
+      }, cors));
       res.end();
       return;
     }
+
     const url = new URL(req.url, 'http://127.0.0.1');
     try {
       if (req.method === 'GET' && url.pathname === '/health') {
-        send(200, { ok: true, protocol: PROTOCOL });
-        return;
-      }
-      if (req.method === 'GET' && url.pathname === '/engines') {
         send(200, {
-          engines: Object.keys(specs).map((id) => ({
-            id,
-            game: specs[id].game,
-            label: specs[id].label || id,
-            installed: installed(id),
-            state: engineMap.get(id)?.state || 'stopped',
-          })),
+          ok: true,
+          protocol: PROTOCOL,
+          version: 2,
+          pid: process.pid,
+          port: actualPort,
+          uptime: Math.round(process.uptime()),
         });
         return;
       }
-      if (req.method === 'POST' && url.pathname === '/install') {
-        const body = await parseBody(req);
-        send(200, await install(body.id));
+
+      if (req.method === 'GET' && url.pathname === '/engines') {
+        const list = Object.keys(engines).map((id) => {
+          const spec = engines[id];
+          const info = store.installed(id);
+          const sup = supervisors.get(id);
+          return {
+            id,
+            game: spec.game || '',
+            label: spec.label || id,
+            tier: spec.tier || 'strong',
+            license: spec.license || '',
+            size: spec.size || '',
+            protocol: spec.protocol || 'uci',
+            installed: info.installed,
+            bytes: info.bytes,
+            state: sup ? sup.state : 'stopped',
+          };
+        });
+        send(200, { engines: list, service: { protocol: PROTOCOL, port: actualPort } });
         return;
       }
-      if (req.method === 'POST' && url.pathname === '/remove') {
-        const body = await parseBody(req);
-        send(200, await remove(body.id));
-        return;
+
+      if (req.method === 'POST') {
+        const body = await readBody(req);
+        if (url.pathname === '/install') {
+          const id = bodyId(body);
+          if (supervisors.has(id)) await supervisors.get(id).stop();
+          send(200, await store.install(id));
+          return;
+        }
+        if (url.pathname === '/remove') {
+          const id = bodyId(body);
+          if (supervisors.has(id)) await supervisors.get(id).stop();
+          send(200, await store.remove(id));
+          return;
+        }
+        if (url.pathname === '/warm') {
+          const id = bodyId(body);
+          const sup = supervisor(id);
+          await sup.ensure();
+          send(200, { id, state: sup.state });
+          return;
+        }
+        if (url.pathname === '/stop') {
+          const id = bodyId(body);
+          const sup = supervisors.get(id);
+          if (sup) await sup.stop();
+          send(200, { id, state: sup ? sup.state : 'stopped' });
+          return;
+        }
+        if (url.pathname === '/move') {
+          const id = bodyId(body);
+          const sup = supervisor(id);
+          const bestmove = await sup.move(body.fen, body.moves, body.movetime);
+          send(200, { id, bestmove });
+          return;
+        }
       }
-      if (req.method === 'POST' && url.pathname === '/warm') {
-        const body = await parseBody(req);
-        const engine = getEngine(body.id);
-        await engine.ensure();
-        send(200, { id: body.id, state: engine.state });
-        return;
-      }
-      if (req.method === 'POST' && url.pathname === '/stop') {
-        const body = await parseBody(req);
-        const engine = getEngine(body.id);
-        await engine.stop();
-        send(200, { id: body.id, state: engine.state });
-        return;
-      }
-      if (req.method === 'POST' && url.pathname === '/move') {
-        const body = await parseBody(req);
-        const engine = getEngine(body.id);
-        const best = await engine.move(String(body.fen || ''), body.moves || [], body.movetime);
-        send(200, { id: body.id, bestmove: best });
-        return;
-      }
-      send(404, { error: 'not found' });
+
+      send(404, { error: 'not found', code: 'not-found' });
     } catch (error) {
-      send(500, { error: String((error && error.message) || error) });
+      const code = error && error.code ? error.code : 'engine-error';
+      const status = code === 'unknown-engine' ? 404 : code === 'bad-request' ? 400
+        : code === 'archive-unsupported' || code === 'asset-not-found' ? 409 : 500;
+      log('error', 'sidecar request ' + req.method + ' ' + url.pathname + ' failed', error);
+      send(status, { error: String((error && error.message) || error), code });
     }
   });
 
-  const close = () => {
-    for (const engine of engineMap.values()) engine.stop();
-    server.close();
+  const close = async () => {
+    if (closing) return;
+    closing = true;
+    await Promise.all([...supervisors.values()].map((sup) => sup.dispose().catch(() => {})));
+    supervisors.clear();
+    await new Promise((resolve) => server.close(() => resolve()));
   };
-  process.once('exit', close);
-  process.once('SIGINT', close);
-  process.once('SIGTERM', close);
 
-  return new Promise((resolve, reject) => {
-    const base = options.port || 38651;
-    let attempt = 0;
-    const listen = () => {
-      server.listen(base + attempt, '127.0.0.1', () => {
-        resolve({ port: base + attempt, close, server });
-      });
-      server.once('error', (error) => {
-        if (error.code === 'EADDRINUSE' && attempt < 10) {
-          attempt += 1;
-          server.removeAllListeners('error');
-          listen();
-        } else {
-          reject(error);
-        }
-      });
+  const killAll = () => {
+    for (const sup of supervisors.values()) sup.kill();
+  };
+  process.once('exit', killAll);
+
+  const listen = (base, attempt) => new Promise((resolve, reject) => {
+    const onError = (error) => {
+      server.removeListener('error', onError);
+      if (error.code === 'EADDRINUSE' && attempt < 10) {
+        listen(base, attempt + 1).then(resolve, reject);
+      } else {
+        reject(error);
+      }
     };
-    listen();
+    server.once('error', onError);
+    server.listen(base + attempt, '127.0.0.1', () => {
+      server.removeListener('error', onError);
+      actualPort = base + attempt;
+      log('info', 'sidecar listening on 127.0.0.1:' + actualPort);
+      resolve({ port: actualPort, close, server });
+    });
   });
+
+  return listen(options.port || 38651, 0);
 }
-
-

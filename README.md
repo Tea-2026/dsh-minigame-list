@@ -17,7 +17,7 @@
 | 俄罗斯方块 | ←→ / ↓ / ↑ / Enter | 空格暂停；顶部穿出升层，白底圆角 + 细缝 |
 | 扫雷 | 左键翻开 / 右键标记 | 自选尺寸与密度，红色圆标标记 |
 | 五子棋 | 点击落子 | 独弈 / 对弈（AI 随插件安装） |
-| 象棋 | 点击选子与落子 | 人机、悔棋、难度 |
+| 象棋 | 点击选子与落子 | 人机、难度；可接 Fairy-Stockfish |
 | 围棋 | 点击落子 | 停一手、数目、贴目 |
 | 消消乐 | 点击交换相邻宝石 | 连锁、提示、无解重排 |
 | 打砖块 | 鼠标 / ←→，Enter 发球 | 球从顶部穿出升层 |
@@ -31,7 +31,18 @@
 - **主题设置**：菜单右上角的设置按钮打开设置页：01 主题色、02 渐变、03 纹理三段式排版，顶部是控制台的实时预览；可改主题色（含预设）、开同色明暗渐变或高级双色渐变、给控制台加网点 / 等高线 / 网格纹理并单独设纹理色。
 - **持久化**：最高分、扫雷/棋类设置、主题设置都存在 localStorage。
 - **快捷键**：`P` 与空格在任意游戏里暂停/继续；菜单里方向键移动焦点、Enter 进入；各游戏专属键不会冲突。
-- **零依赖**：纯 Host + Client 插件，不需要额外 npm 包或服务。
+- **零依赖**：插件本身不依赖额外 npm 包；AI 引擎按需下载（当前只有象棋）。
+- **AI 引擎**：菜单右上角的引擎按钮打开引擎面板，可下载 / 预热 / 停用 / 删除引擎，详见下一节。
+
+## AI 引擎（可选）
+
+对弈不再只靠内置启发式。宿主侧随 Harness 起一个只监听 `127.0.0.1` 的引擎服务（`sidecar.mjs`，端口 38651–38661），客户端在引擎面板里管理它：
+
+- **象棋**：Fairy-Stockfish（GPL-3.0，约 1.7 MB，UCI）——面板里下载、预热、停用、删除；
+- 引擎进程在对局时懒启动，空闲 10 分钟退出；宿主服务随 Harness 启动，引擎面板关闭时不轮询；
+- 客户端每 3 秒探测，服务恢复后自动连上；宿主代码更新后需要重启 Harness 才会重新加载（`engines/sidecar.log` 记录启动与错误）。
+
+目前只有象棋接入；五子棋（Rapfi）和围棋（KataGo）的发布包是 7z/zip，解压层还没做。
 
 ## 截图
 
@@ -70,7 +81,10 @@ https://raw.githubusercontent.com/Tea-2026/dsh-minigame-list/main/market/index.j
 ```
 dsh-minigame-list/
 ├─ client.js         # 全部 UI 与游戏逻辑（Client）
-├─ index.js          # Host 入口（apply）
+├─ index.js          # Host 入口：加载引擎清单并启动服务
+├─ sidecar.mjs       # 环回 HTTP + 引擎进程监督
+├─ engines.json      # 可下载引擎清单
+├─ lib/              # 引擎监督器与安装器
 ├─ cordis.patch.yml  # bundle 清单：注册 minigame-list 行
 ├─ locale/           # en / zh 显示文案
 ├─ icon.svg          # 插件图标
@@ -82,7 +96,8 @@ dsh-minigame-list/
 
 - 客户端在 `client.js` 里通过 `window.__ModuleLoader__.load({ id, factory })` 注册，向 `shell.overlay` 插槽注册 `minigame-launcher`。
 - 游戏均为纯函数 + React 组件；`tools/*-logic-check.mjs` 是本地逻辑回归脚本（从源码抽取纯函数在 `node:vm` 里跑）。
-- 修改后刷新页面即可（profile 内为符号链接）。
+- 客户端改动刷新页面即可（profile 内为符号链接）；宿主（`index.js` / `sidecar.mjs` / `lib/` / `engines.json`）改动要重启 Harness 才会重新加载。
+- 引擎相关测试：`tools/sidecar-test.mjs`（假 UCI 引擎、端口与来源校验）、`tools/engine-test.mjs`（真实下载）、`tools/xq-fen-test.mjs`（象棋 FEN 与真实引擎走子）。
 
 ## License
 
