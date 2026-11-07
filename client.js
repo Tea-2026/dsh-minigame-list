@@ -108,6 +108,7 @@ window.__ModuleLoader__.load({
       aiInstall: '安装 AI 引擎',
       aiInstalled: 'AI 引擎已安装',
       aiNote: '引擎随插件提供，安装后离线可用',
+      engineHint: '对弈由引擎接管；未安装时退回内置 AI，可在菜单 → AI 引擎里下载。',
       turnLabel: '轮到',
       black: '黑棋',
       white: '白棋',
@@ -265,6 +266,7 @@ window.__ModuleLoader__.load({
       aiInstall: 'Install AI engine',
       aiInstalled: 'AI engine installed',
       aiNote: 'The engine ships with the plugin and works offline once installed',
+      engineHint: 'Versus plays through the downloaded engine; without one it falls back to the built-in AI (Menu → AI engines).',
       turnLabel: 'Turn',
       black: 'Black',
       white: 'White',
@@ -331,7 +333,7 @@ window.__ModuleLoader__.load({
 
     const MENU = { w: 350, h: 460 };
     const SETTINGS_FRAME = { w: 380, h: 580 };
-    const ENGINE_FRAME = { w: 380, h: 400 };
+    const ENGINE_FRAME = { w: 380, h: 470 };
     const SNAKE_COLS = 20;
     const SNAKE_ROWS = 15;
     const BEST_KEY = 'dsh-minigame-list.snake.best';
@@ -662,7 +664,7 @@ window.__ModuleLoader__.load({
       '.mg-engines{overflow:auto;background:#ffffff;color:#0f1115;scrollbar-width:thin;scrollbar-color:#d8dbe1 transparent;scrollbar-gutter:stable}',
       '.mg-engines::-webkit-scrollbar{width:8px;height:8px}',
       '.mg-engines::-webkit-scrollbar-thumb{background:#dde0e6;border:2px solid #ffffff;border-radius:999px}',
-      '.mg-eng-inner{display:flex;flex-direction:column;gap:14px;min-height:100%;box-sizing:border-box;padding:16px 20px 18px}',
+      '.mg-eng-inner{display:flex;flex-direction:column;gap:14px;height:100%;box-sizing:border-box;padding:16px 20px 18px}',
       '.mg-eng-head{display:flex;align-items:center;gap:10px}',
       '.mg-eng-service{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #eceef1;border-radius:12px;background:#f7f8fa}',
       '.mg-eng-dot{flex:none;width:8px;height:8px;border-radius:50%;background:#a0a7b1;box-shadow:0 0 0 4px rgba(160,167,177,.12);transition:background .16s ease,box-shadow .16s ease}',
@@ -676,7 +678,7 @@ window.__ModuleLoader__.load({
       '.mg-eng-offline{display:flex;flex-direction:column;align-items:flex-start;gap:9px;padding:14px;border:1px dashed #dcdfe4;border-radius:12px;background:#fbfcfd}',
       '.mg-eng-offline-title{font-size:13px;font-weight:650;line-height:1.3;color:#0f1115}',
       '.mg-eng-offline-text{margin:0;font-size:10.5px;line-height:1.7;color:#6b7480}',
-      '.mg-eng-body{display:flex;flex-direction:column;gap:14px}',
+      '.mg-eng-body{display:flex;flex-direction:column;gap:14px;flex:1 1 auto;min-height:0;overflow-y:auto;padding-right:2px}',
       '.mg-eng-sec{display:flex;flex-direction:column;gap:9px}',
       '.mg-eng-sec-head{display:flex;align-items:center;gap:8px}',
       '.mg-eng-sec-label{font:600 9.5px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.16em;color:#5b6470}',
@@ -861,6 +863,7 @@ window.__ModuleLoader__.load({
       '.mg-ai-box{display:flex;flex-direction:column;gap:6px;padding:9px 10px;border-radius:10px;border:1px dashed color-mix(in srgb, var(--dsw-alias-label-primary) 18%, transparent);background:color-mix(in srgb, var(--dsw-alias-label-primary) 3%, transparent)}',
       '.mg-ai-box-title{font-size:11.5px;font-weight:600;color:var(--dsw-alias-label-primary)}',
       '.mg-ai-box-note{font-size:10.5px;line-height:1.45;color:var(--dsw-alias-label-secondary)}',
+      '.mg-ai-note{margin-top:2px;font-size:10.5px;line-height:1.45;color:var(--dsw-alias-label-secondary)}',
       '.mg-ai-btn{align-self:flex-start;height:26px;padding:0 11px;border:0;border-radius:8px;background:var(--dsw-alias-brand-primary);color:var(--dsw-alias-label-primary-foreground,#fff);font-size:11.5px;font-weight:600;cursor:pointer}',
       '.mg-ai-btn:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:2px}',
       /* 2048 — wireframe / functional */
@@ -1854,15 +1857,30 @@ window.__ModuleLoader__.load({
         startGame();
       }, [restartTick, startGame]);
 
-      /* White is the engine. It waits a beat so the move is visible, and a
-       * pause cancels the pending turn instead of playing through the overlay. */
+      /* White is the engine. Prefer the downloaded Rapfi, and fall back to the
+       * built-in heuristic when it is missing or the request fails. */
       useEffect(() => {
-        if (settings.mode !== 'ai' || !settings.installed) return undefined;
+        if (settings.mode !== 'ai') return undefined;
         if (status !== 'playing' || turn !== 2 || result || paused) return undefined;
+        let dead = false;
         setThinking(true);
-        const id = window.setTimeout(() => {
+        const id = window.setTimeout(async () => {
+          const stones = [];
+          for (let i = 0; i < board.length; i += 1) {
+            if (board[i]) stones.push([i % GOMOKU_N, Math.floor(i / GOMOKU_N), board[i]]);
+          }
+          const reply = await mgEngineMove('gomoku', {
+            size: GOMOKU_N, color: 2, stones, level: settings.difficulty,
+          }, 30000);
+          if (dead) return;
           setThinking(false);
-          const move = gomokuReply(board, settings.difficulty);
+          let move = null;
+          const parsed = /^(\d+),(\d+)$/.exec(String(reply || '').trim());
+          if (parsed) {
+            const index = Number(parsed[2]) * GOMOKU_N + Number(parsed[1]);
+            if (index >= 0 && index < board.length && board[index] === 0) move = index;
+          }
+          if (move === null) move = gomokuReply(board, settings.difficulty);
           if (board[move] !== 0) return;
           const next = board.slice();
           next[move] = 2;
@@ -1878,8 +1896,11 @@ window.__ModuleLoader__.load({
             setTurn(1);
           }
         }, 320);
-        return () => window.clearTimeout(id);
-      }, [settings.mode, settings.installed, settings.difficulty, status, turn, result, paused, board]);
+        return () => {
+          dead = true;
+          window.clearTimeout(id);
+        };
+      }, [settings.mode, settings.difficulty, status, turn, result, paused, board]);
 
       const place = (index) => {
         if (paused || status !== 'playing' || result) return;
@@ -1942,34 +1963,25 @@ window.__ModuleLoader__.load({
             ),
           ),
           ai
-            ? (settings.installed
-              ? h('div', { className: 'mg-mines-group' },
-                h('span', { className: 'mg-mines-group-label' }, t('difficultyLabel')),
-                h('div', { className: 'mg-mines-chips' },
-                  [['easy', 'diffEasy', 'diffEasyHint'], ['normal', 'diffNormal', 'diffNormalHint'], ['hard', 'diffHard', 'diffHardHint']]
-                    .map(([id, labelKey, hintKey]) => h('button', {
-                      key: id, type: 'button', className: 'mg-chip',
-                      'aria-pressed': settings.difficulty === id ? 'true' : 'false',
-                      onClick: () => save({ difficulty: id }),
-                    },
-                      h('b', null, t(labelKey)),
-                      h('span', null, t(hintKey)),
-                    )),
-                ),
-              )
-              : h('div', { className: 'mg-ai-box' },
-                h('div', { className: 'mg-ai-box-title' }, t('aiMissing')),
-                h('div', { className: 'mg-ai-box-note' }, t('aiNote')),
-                h('button', {
-                  type: 'button', className: 'mg-ai-btn',
-                  onClick: () => save({ installed: true }),
-                }, t('aiInstall')),
-              ))
+            ? h('div', { className: 'mg-mines-group' },
+              h('span', { className: 'mg-mines-group-label' }, t('difficultyLabel')),
+              h('div', { className: 'mg-mines-chips' },
+                [['easy', 'diffEasy', 'diffEasyHint'], ['normal', 'diffNormal', 'diffNormalHint'], ['hard', 'diffHard', 'diffHardHint']]
+                  .map(([id, labelKey, hintKey]) => h('button', {
+                    key: id, type: 'button', className: 'mg-chip',
+                    'aria-pressed': settings.difficulty === id ? 'true' : 'false',
+                    onClick: () => save({ difficulty: id }),
+                  },
+                    h('b', null, t(labelKey)),
+                    h('span', null, t(hintKey)),
+                  )),
+              ),
+              h('div', { className: 'mg-ai-note' }, t('engineHint')),
+            )
             : null,
           h('button', {
             type: 'button',
             className: 'mg-mines-start',
-            disabled: ai && !settings.installed,
             onClick: startGame,
           }, t('start')),
         );
@@ -2110,32 +2122,24 @@ window.__ModuleLoader__.load({
             },
           ]),
         ),
-        ai ? (settings.installed
-          ? h('div', { className: 'mg-mines-group' },
-            h('span', { className: 'mg-mines-group-label' }, t('difficultyLabel')),
-            chips([
-              {
-                id: 'easy', title: t('diffEasy'), subtitle: t('diffEasyHint'), active: settings.difficulty === 'easy', onClick: () => onChange({ difficulty: 'easy' }),
-              },
-              {
-                id: 'normal', title: t('diffNormal'), subtitle: t('diffNormalHint'), active: settings.difficulty === 'normal', onClick: () => onChange({ difficulty: 'normal' }),
-              },
-              {
-                id: 'hard', title: t('diffHard'), subtitle: t('diffHardHint'), active: settings.difficulty === 'hard', onClick: () => onChange({ difficulty: 'hard' }),
-              },
-            ]))
-          : h('div', { className: 'mg-ai-box' },
-            h('div', { className: 'mg-ai-box-title' }, t('aiMissing')),
-            h('div', { className: 'mg-ai-box-note' }, t('aiNote')),
-            h('button', {
-              type: 'button', className: 'mg-ai-btn', onClick: () => onChange({ installed: true }),
-            }, t('aiInstall')),
-          ))
-          : null,
+        ai ? h('div', { className: 'mg-mines-group' },
+          h('span', { className: 'mg-mines-group-label' }, t('difficultyLabel')),
+          chips([
+            {
+              id: 'easy', title: t('diffEasy'), subtitle: t('diffEasyHint'), active: settings.difficulty === 'easy', onClick: () => onChange({ difficulty: 'easy' }),
+            },
+            {
+              id: 'normal', title: t('diffNormal'), subtitle: t('diffNormalHint'), active: settings.difficulty === 'normal', onClick: () => onChange({ difficulty: 'normal' }),
+            },
+            {
+              id: 'hard', title: t('diffHard'), subtitle: t('diffHardHint'), active: settings.difficulty === 'hard', onClick: () => onChange({ difficulty: 'hard' }),
+            },
+          ]),
+          h('div', { className: 'mg-ai-note' }, t('engineHint')),
+        ) : null,
         h('button', {
           type: 'button',
           className: 'mg-mines-start',
-          disabled: ai && !settings.installed,
           onClick: onStart,
         }, t('start')),
       );
@@ -2258,12 +2262,12 @@ window.__ModuleLoader__.load({
       return json;
     }
 
-    async function mgEngineMove(id, fen, movetime) {
+    async function mgEngineMove(id, request, timeoutMs) {
       const port = await mgEnginePort();
       if (!port) return null;
       try {
-        const json = await engineCall(port, 'move', { id, fen, movetime }, 6000);
-        return json.bestmove || null;
+        const json = await engineCall(port, 'move', Object.assign({ id }, request), timeoutMs || 30000);
+        return json.move || json.bestmove || null;
       } catch (error) {
         if (!error.code) engineForget();
         return null;
@@ -2334,13 +2338,13 @@ window.__ModuleLoader__.load({
       }, [restartTick, startGame]);
 
       useEffect(() => {
-        if (settings.mode !== 'ai' || !settings.installed) return undefined;
+        if (settings.mode !== 'ai') return undefined;
         if (status !== 'playing' || turn !== 'b' || winner || paused) return undefined;
         let dead = false;
         const id = window.setTimeout(async () => {
           let move = null;
           try {
-            const best = await mgEngineMove('xiangqi', xqFen(board, 'b'), 500);
+            const best = await mgEngineMove('xiangqi', { fen: xqFen(board, 'b'), level: settings.difficulty }, 20000);
             move = best ? xqUciMove(best) : null;
           } catch (error) {
             move = null;
@@ -2369,7 +2373,7 @@ window.__ModuleLoader__.load({
           dead = true;
           window.clearTimeout(id);
         };
-      }, [settings.mode, settings.installed, settings.difficulty, status, turn, winner, paused, board]);
+      }, [settings.mode, settings.difficulty, status, turn, winner, paused, board]);
 
       const choose = (index) => {
         if (paused || status !== 'playing' || winner) return;
@@ -2570,6 +2574,15 @@ window.__ModuleLoader__.load({
       return scored[0].move.index;
     }
 
+    function goGtpIndex(move) {
+      const match = /^([A-HJ-T])(\d+)$/.exec(String(move || '').trim().toUpperCase());
+      if (!match) return null;
+      const x = 'ABCDEFGHJKLMNOPQRST'.indexOf(match[1]);
+      const row = Number(match[2]);
+      if (x < 0 || x >= GO_N || row < 1 || row > GO_N) return null;
+      return (GO_N - row) * GO_N + x;
+    }
+
     function GoGame(props) {
       const { t, paused, extraTick, restartTick } = props;
       const [settings, setSettings] = useState(() => readBoardSettings(GO_SETTINGS_KEY));
@@ -2638,10 +2651,24 @@ window.__ModuleLoader__.load({
       }, [extraTick]);
 
       useEffect(() => {
-        if (settings.mode !== 'ai' || !settings.installed) return undefined;
+        if (settings.mode !== 'ai') return undefined;
         if (status !== 'playing' || turn !== 2 || paused) return undefined;
-        const id = window.setTimeout(() => {
-          const index = goAiMove(board, 2, ko, settings.difficulty);
+        let dead = false;
+        const id = window.setTimeout(async () => {
+          const stones = [];
+          for (let i = 0; i < board.length; i += 1) {
+            if (board[i]) stones.push([i % GO_N, Math.floor(i / GO_N), board[i]]);
+          }
+          const reply = await mgEngineMove('go', {
+            size: GO_N, komi: GO_KOMI, color: 2, stones, level: settings.difficulty,
+          }, 30000);
+          if (dead) return;
+          if (String(reply || '').trim().toLowerCase() === 'pass') {
+            doPass();
+            return;
+          }
+          let index = goGtpIndex(reply);
+          if (index === null) index = goAiMove(board, 2, ko, settings.difficulty);
           if (index === null) {
             doPass();
             return;
@@ -2653,8 +2680,11 @@ window.__ModuleLoader__.load({
           }
           commit(result, index);
         }, 320);
-        return () => window.clearTimeout(id);
-      }, [settings.mode, settings.installed, settings.difficulty, status, turn, paused, board, ko, doPass, commit]);
+        return () => {
+          dead = true;
+          window.clearTimeout(id);
+        };
+      }, [settings.mode, settings.difficulty, status, turn, paused, board, ko, doPass, commit]);
 
       const place = (index) => {
         if (paused || status !== 'playing') return;
@@ -4655,7 +4685,7 @@ window.__ModuleLoader__.load({
         setBusy(id + ':' + kind);
         setActionError('');
         try {
-          await engineCall(port, kind, { id }, kind === 'install' ? 600000 : 30000);
+          await engineCall(port, kind, { id }, kind === 'install' ? 1800000 : 30000);
           await reload();
         } catch (failure) {
           setActionError(failure.message || t('engineActionFailed'));

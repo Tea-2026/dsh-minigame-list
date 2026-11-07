@@ -10,7 +10,82 @@
       "repo": "fairy-stockfish/Fairy-Stockfish",
       "asset": "fairy-stockfish_x86-64-bmi2\\.exe$",
       "args": [],
-      "variant": "xiangqi"
+      "variant": "xiangqi",
+      "levels": {
+        "easy": {
+          "movetime": 300
+        },
+        "normal": {
+          "movetime": 700
+        },
+        "hard": {
+          "movetime": 1600
+        }
+      }
+    },
+    "gomoku": {
+      "game": "gomoku",
+      "label": "Rapfi",
+      "tier": "strong",
+      "license": "GPL-3.0",
+      "size": "36.8 MB",
+      "protocol": "gomocup",
+      "repo": "dhbloo/rapfi",
+      "asset": "Rapfi-engine\\.7z$",
+      "archive": "7z",
+      "exeName": "pbrain-rapfi-windows-avx2.exe",
+      "levels": {
+        "easy": {
+          "timeoutTurn": 300
+        },
+        "normal": {
+          "timeoutTurn": 800
+        },
+        "hard": {
+          "timeoutTurn": 1600
+        }
+      },
+      "exeCandidates": [
+        "pbrain-rapfi-windows-avx2.exe",
+        "pbrain-rapfi-windows-sse.exe"
+      ]
+    },
+    "go": {
+      "game": "go",
+      "label": "KataGo",
+      "tier": "strong",
+      "license": "MIT",
+      "size": "15 MB",
+      "protocol": "gtp",
+      "repo": "lightvector/KataGo",
+      "releaseTag": "v1.18.1",
+      "asset": "katago-v1\\.18\\.1-eigen-windows-x64\\.zip$",
+      "archive": "zip",
+      "exeName": "katago.exe",
+      "args": [
+        "gtp",
+        "-model",
+        "{model}",
+        "-config",
+        "default_gtp.cfg"
+      ],
+      "model": {
+        "url": "https://media.katagotraining.org/uploaded/networks/zips/kata1/kata1-b6c96-s175395328-d26788732.zip",
+        "archive": "zip",
+        "nameHint": "model.txt.gz",
+        "size": "8.8 MB"
+      },
+      "levels": {
+        "easy": {
+          "maxVisits": 8
+        },
+        "normal": {
+          "maxVisits": 40
+        },
+        "hard": {
+          "maxVisits": 160
+        }
+      }
     }
   }
 }

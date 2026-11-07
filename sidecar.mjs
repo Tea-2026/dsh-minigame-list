@@ -2,6 +2,7 @@
  * supervisors. The client discovers it on 127.0.0.1:38651–38661 and drives
  * install / warm / stop / move through it. */
 import http from 'node:http';
+import { dirname } from 'node:path';
 import { EngineSupervisor } from './lib/engine-supervisor.mjs';
 import { createEngineStore } from './lib/engine-store.mjs';
 
@@ -61,7 +62,20 @@ export function startSidecar(options = {}) {
       throw error;
     }
     if (!supervisors.has(id)) {
-      supervisors.set(id, new EngineSupervisor({ id, spec: engines[id], idleMs, log }));
+      const exe = store.resolveExe(id);
+      const args = store.argsFor(id);
+      const base = engines[id].dir;
+      const cwd = !base ? undefined
+        : (exe && dirname(exe) === base ? base : (exe ? dirname(exe) : base));
+      supervisors.set(id, new EngineSupervisor({
+        id,
+        spec: engines[id],
+        exe,
+        args,
+        cwd,
+        idleMs,
+        log,
+      }));
     }
     return supervisors.get(id);
   };
@@ -136,13 +150,19 @@ export function startSidecar(options = {}) {
         const body = await readBody(req);
         if (url.pathname === '/install') {
           const id = bodyId(body);
-          if (supervisors.has(id)) await supervisors.get(id).stop();
+          if (supervisors.has(id)) {
+            await supervisors.get(id).stop();
+            supervisors.delete(id);
+          }
           send(200, await store.install(id));
           return;
         }
         if (url.pathname === '/remove') {
           const id = bodyId(body);
-          if (supervisors.has(id)) await supervisors.get(id).stop();
+          if (supervisors.has(id)) {
+            await supervisors.get(id).stop();
+            supervisors.delete(id);
+          }
           send(200, await store.remove(id));
           return;
         }
@@ -161,10 +181,9 @@ export function startSidecar(options = {}) {
           return;
         }
         if (url.pathname === '/move') {
-          const id = bodyId(body);
-          const sup = supervisor(id);
-          const bestmove = await sup.move(body.fen, body.moves, body.movetime);
-          send(200, { id, bestmove });
+          const sup = supervisor(bodyId(body));
+          const result = await sup.move(body);
+          send(200, Object.assign({ id: bodyId(body) }, result));
           return;
         }
       }

@@ -6,6 +6,9 @@ const side = await startSidecar({
   idleMs: 400,
   engines: {
     fake: { exe: process.execPath, args: ['tools/fake-uci.mjs'], game: 'xiangqi', label: 'Fake USB' },
+    fakemoku: {
+      exe: process.execPath, args: ['tools/fake-gomocup.mjs'], game: 'gomoku', protocol: 'gomocup', label: 'Fake Gomoku',
+    },
   },
 });
 const base = 'http://127.0.0.1:' + side.port;
@@ -45,6 +48,11 @@ const move = await call('/move', { id: 'fake', fen: 'startpos', moves: [], movet
 if (move.json.bestmove !== 'e2e4') throw new Error('move failed: ' + JSON.stringify(move.json));
 const stop = await call('/stop', { id: 'fake' });
 if (stop.json.state !== 'stopped') throw new Error('stop failed');
+
+const gomoku = await call('/move', {
+  id: 'fakemoku', size: 15, color: 2, stones: [[7, 6, 1], [8, 8, 2]], level: 'easy',
+});
+if (gomoku.json.move !== '7,7') throw new Error('gomocup move failed: ' + JSON.stringify(gomoku.json));
 
 const list = await call('/engines');
 if (!list.json.engines.length) throw new Error('engine list empty');
