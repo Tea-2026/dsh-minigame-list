@@ -1,0 +1,12 @@
+{
+  "engines": {
+    "xiangqi": {
+      "game": "xiangqi",
+      "label": "Fairy-Stockfish",
+      "repo": "fairy-stockfish/Fairy-Stockfish",
+      "asset": "fairy-stockfish_x86-64-bmi2\\.exe$",
+      "args": [],
+      "variant": "xiangqi"
+    }
+  }
+}

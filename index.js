@@ -14,7 +14,7 @@ function loadManifest() {
     const raw = JSON.parse(readFileSync(file, 'utf8'));
     const engines = {};
     for (const [id, spec] of Object.entries(raw.engines || {})) {
-      engines[id] = { ...spec, exe: join(here, spec.exe) };
+      engines[id] = { ...spec, exe: join(here, 'engines', id, 'engine.exe') };
     }
     return engines;
   } catch (error) {
@@ -24,7 +24,7 @@ function loadManifest() {
 }
 
 export function apply() {
-  startSidecar({ engines: loadManifest() })
+  startSidecar({ dir: here, engines: loadManifest() })
     .then(({ port }) => {
       console.log('[minigame] engine sidecar listening on 127.0.0.1:' + port);
     })

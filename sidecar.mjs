@@ -1,10 +1,13 @@
-/* Local engine sidecar: an HTTP surface on 127.0.0.1 plus UCI process supervision.
+﻿/* Local engine sidecar: an HTTP surface on 127.0.0.1 plus UCI process supervision.
  * The Client UI talks to this over fetch; engine processes are started lazily and
  * released after an idle timeout or when the Harness exits. */
 import http from 'node:http';
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
+import { existsSync, mkdirSync, rmSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 
 const IDLE_MS = 10 * 60 * 1000;
+const CURL = process.platform === 'win32' ? ['curl', '--ssl-no-revoke'] : ['curl'];
 const PROTOCOL = 'dsh-minigame-sidecar/1';
 
 function parseBody(req) {
@@ -36,12 +39,10 @@ class Engine {
     this.waiters = [];
     this.queue = Promise.resolve();
     this.idleTimer = 0;
-    this.onState = null;
   }
 
-  emit(state, detail) {
+  emit(state) {
     this.state = state;
-    if (this.onState) this.onState(this.id, state, detail);
   }
 
   touch() {
@@ -96,12 +97,10 @@ class Engine {
       this.waiters = [];
       this.emit('stopped');
     });
-    const api = (line) => proc.stdin.write(line + '\n');
-    this.send = api;
-    api('uci');
+    proc.stdin.write('uci\n');
     await this.expect(/^uciok/);
-    if (this.spec.variant) api('setoption name UCI_Variant value ' + this.spec.variant);
-    api('isready');
+    if (this.spec.variant) proc.stdin.write('setoption name UCI_Variant value ' + this.spec.variant + '\n');
+    proc.stdin.write('isready\n');
     await this.expect(/^readyok/);
     this.emit('ready');
     this.touch();
@@ -121,9 +120,10 @@ class Engine {
       await this.ensure();
       this.touch();
       this.emit('thinking');
-      const api = (line) => this.proc.stdin.write(line + '\n');
-      api('position fen ' + fen + (moves && moves.length ? ' moves ' + moves.join(' ') : ''));
-      api('go movetime ' + Math.max(20, Math.min(10000, movetime || 300)));
+      const proc = this.proc;
+      const position = fen === 'startpos' ? 'position startpos' : 'position fen ' + fen;
+      proc.stdin.write(position + (moves && moves.length ? ' moves ' + moves.join(' ') : '') + '\n');
+      proc.stdin.write('go movetime ' + Math.max(20, Math.min(10000, movetime || 300)) + '\n');
       const line = await this.expect(/^bestmove/, 15000);
       this.emit('ready');
       this.touch();
@@ -134,7 +134,7 @@ class Engine {
     return result;
   }
 
-  async stop(reason) {
+  async stop() {
     clearTimeout(this.idleTimer);
     const proc = this.proc;
     if (!proc) {
@@ -157,18 +157,45 @@ class Engine {
       });
     });
     this.proc = null;
-    this.emit('stopped', reason || 'manual');
+    this.emit('stopped');
   }
 }
 
 export function startSidecar(options = {}) {
   const idleMs = options.idleMs || IDLE_MS;
   const specs = options.engines || {};
+  const root = options.dir || '.';
   const engineMap = new Map();
   const getEngine = (id) => {
     if (!specs[id]) throw new Error('unknown engine ' + id);
     if (!engineMap.has(id)) engineMap.set(id, new Engine(id, specs[id], idleMs));
     return engineMap.get(id);
+  };
+  const installed = (id) => existsSync(join(root, 'engines', id, 'engine.exe'));
+
+  const install = async (id) => {
+    const spec = specs[id];
+    if (!spec || !spec.repo) throw new Error('engine not installable');
+    const dir = join(root, 'engines', id);
+    mkdirSync(dir, { recursive: true });
+    /* Use the system curl so TLS goes through the OS trust store (VPN/proxy safe). */
+    const release = JSON.parse(execFileSync(CURL[0], [...CURL.slice(1), '-sL', '-H', 'user-agent: dsh-minigame-list', 'https://api.github.com/repos/' + spec.repo + '/releases/latest'], { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 }));
+    const pattern = new RegExp(spec.asset || 'x86-64.*\\.exe$');
+    const asset = (release.assets || []).find((item) => pattern.test(item.name));
+    if (!asset) throw new Error('no matching release asset');
+    const target = join(dir, 'engine.exe');
+    execFileSync(CURL[0], [...CURL.slice(1), '-sL', '-o', target, asset.browser_download_url], { stdio: 'pipe', maxBuffer: 8 * 1024 * 1024 });
+    const bytes = statSync(target).size;
+    if (!bytes) throw new Error('download failed');
+    return { id, bytes, tag: release.tag_name };
+  };
+
+  const remove = async (id) => {
+    if (!specs[id]) throw new Error('unknown engine ' + id);
+    const engine = engineMap.get(id);
+    if (engine) await engine.stop();
+    rmSync(join(root, 'engines', id), { recursive: true, force: true });
+    return { id, installed: false };
   };
 
   const server = http.createServer(async (req, res) => {
@@ -201,9 +228,21 @@ export function startSidecar(options = {}) {
           engines: Object.keys(specs).map((id) => ({
             id,
             game: specs[id].game,
+            label: specs[id].label || id,
+            installed: installed(id),
             state: engineMap.get(id)?.state || 'stopped',
           })),
         });
+        return;
+      }
+      if (req.method === 'POST' && url.pathname === '/install') {
+        const body = await parseBody(req);
+        send(200, await install(body.id));
+        return;
+      }
+      if (req.method === 'POST' && url.pathname === '/remove') {
+        const body = await parseBody(req);
+        send(200, await remove(body.id));
         return;
       }
       if (req.method === 'POST' && url.pathname === '/warm') {
@@ -216,7 +255,7 @@ export function startSidecar(options = {}) {
       if (req.method === 'POST' && url.pathname === '/stop') {
         const body = await parseBody(req);
         const engine = getEngine(body.id);
-        await engine.stop('manual');
+        await engine.stop();
         send(200, { id: body.id, state: engine.state });
         return;
       }
@@ -229,12 +268,12 @@ export function startSidecar(options = {}) {
       }
       send(404, { error: 'not found' });
     } catch (error) {
-      send(500, { error: String(error && error.message || error) });
+      send(500, { error: String((error && error.message) || error) });
     }
   });
 
   const close = () => {
-    for (const engine of engineMap.values()) engine.stop('shutdown');
+    for (const engine of engineMap.values()) engine.stop();
     server.close();
   };
   process.once('exit', close);
@@ -242,13 +281,11 @@ export function startSidecar(options = {}) {
   process.once('SIGTERM', close);
 
   return new Promise((resolve, reject) => {
-    server.once('error', reject);
     const base = options.port || 38651;
     let attempt = 0;
     const listen = () => {
-      const port = base + attempt;
-      server.listen(port, '127.0.0.1', () => {
-        resolve({ port, close, server });
+      server.listen(base + attempt, '127.0.0.1', () => {
+        resolve({ port: base + attempt, close, server });
       });
       server.once('error', (error) => {
         if (error.code === 'EADDRINUSE' && attempt < 10) {
@@ -263,3 +300,5 @@ export function startSidecar(options = {}) {
     listen();
   });
 }
+
+
