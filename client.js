@@ -2092,6 +2092,7 @@ window.__ModuleLoader__.load({
               /* try the next port */
             }
           }
+          mgPortPromise = null;
           return 0;
         })();
       }
@@ -4406,7 +4407,7 @@ window.__ModuleLoader__.load({
       );
     }
 
-    function useSidecarPort() {
+    function useSidecarPort(tick) {
       const [port, setPort] = useState(0);
       useEffect(() => {
         let dead = false;
@@ -4424,12 +4425,28 @@ window.__ModuleLoader__.load({
           }
         })();
         return () => { dead = true; };
-      }, []);
+      }, [tick]);
       return port;
     }
 
     function EnginePanel(props) {
-      const port = useSidecarPort();
+      const [retry, setRetry] = useState(0);
+      const port = useSidecarPort(retry);
+      useEffect(() => {
+        const bump = () => setRetry((value) => value + 1);
+        const onVisible = () => { if (!document.hidden) bump(); };
+        window.addEventListener('focus', bump);
+        document.addEventListener('visibilitychange', onVisible);
+        return () => {
+          window.removeEventListener('focus', bump);
+          document.removeEventListener('visibilitychange', onVisible);
+        };
+      }, []);
+      useEffect(() => {
+        if (port) return undefined;
+        const id = window.setInterval(() => setRetry((value) => value + 1), 3000);
+        return () => window.clearInterval(id);
+      }, [port]);
       const [list, setList] = useState([]);
       const [busy, setBusy] = useState('');
       const [error, setError] = useState('');
@@ -4469,7 +4486,14 @@ window.__ModuleLoader__.load({
           h('span', { className: 'mg-set-kicker' }, 'ENGINES'),
         ),
         !port
-          ? h('div', { className: 'mg-eng-note' }, '本地引擎服务未连接。启动 Harness 后会自动就绪，再打开这里。')
+          ? h('div', { className: 'mg-eng-note' },
+            '本地引擎服务未连接。重启 Harness 让宿主加载插件后会自动就绪；也可以点重试。',
+            h('div', { style: { marginTop: '8px' } },
+              h('button', {
+                type: 'button', className: 'mg-eng-btn', onClick: () => setRetry((value) => value + 1),
+              }, '重试连接'),
+            ),
+          )
           : h('div', { className: 'mg-eng-list' },
             list.map((item) => h('div', { className: 'mg-eng-card', key: item.id },
               h('div', { className: 'mg-eng-top' },
