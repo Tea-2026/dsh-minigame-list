@@ -2381,10 +2381,16 @@ window.__ModuleLoader__.load({
     }
 
     function xqUciMove(uci) {
-      if (!/^[a-i][0-9][a-i][0-9]/.test(uci || '')) return null;
-      const from = Number(uci[1]) * XQ_W + (uci.charCodeAt(0) - 97);
-      const to = Number(uci[3]) * XQ_W + (uci.charCodeAt(2) - 97);
-      if (from < 0 || from >= 90 || to < 0 || to >= 90) return null;
+      const text = String(uci || '').trim();
+      if (!/^[a-i][0-9][a-i][0-9]/.test(text)) return null;
+      const fileFrom = text.charCodeAt(0) - 97;
+      const fileTo = text.charCodeAt(2) - 97;
+      const rankFrom = Number(text[1]);
+      const rankTo = Number(text[3]);
+      if (rankFrom > 9 || rankTo > 9) return null;
+      // Xiangqi UCI ranks run 0..9 from the red side; the board keeps black on top.
+      const from = (XQ_H - 1 - rankFrom) * XQ_W + fileFrom;
+      const to = (XQ_H - 1 - rankTo) * XQ_W + fileTo;
       return { from, to };
     }
 
@@ -2433,7 +2439,11 @@ window.__ModuleLoader__.load({
           let move = null;
           try {
             const best = await mgEngineMove('xiangqi', { fen: xqFen(board, 'b'), level: settings.difficulty }, 20000);
-            move = best ? xqUciMove(best) : null;
+            const parsed = best ? xqUciMove(best) : null;
+            if (parsed && board[parsed.from] && xqColor(board[parsed.from]) === 'b'
+              && xqLegalMoves(board, parsed.from).indexOf(parsed.to) >= 0) {
+              move = parsed;
+            }
           } catch (error) {
             move = null;
           }

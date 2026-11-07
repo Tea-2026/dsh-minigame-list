@@ -2,15 +2,21 @@
   "engines": {
     "xiangqi": {
       "game": "xiangqi",
-      "label": "Fairy-Stockfish",
+      "label": "Pikafish",
       "tier": "strong",
       "license": "GPL-3.0",
-      "size": "1.7 MB",
+      "size": "53.6 MB",
       "protocol": "uci",
-      "repo": "fairy-stockfish/Fairy-Stockfish",
-      "asset": "fairy-stockfish_x86-64-bmi2\\.exe$",
+      "repo": "official-pikafish/Pikafish",
+      "asset": "Pikafish\\..*\\.7z$",
+      "archive": "7z",
+      "exeName": "pikafish-avx2.exe",
+      "exeCandidates": [
+        "pikafish-avx2.exe",
+        "pikafish-sse.exe",
+        "pikafish.exe"
+      ],
       "args": [],
-      "variant": "xiangqi",
       "levels": {
         "easy": {
           "movetime": 300

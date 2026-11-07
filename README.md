@@ -17,7 +17,7 @@
 | 俄罗斯方块 | ←→ / ↓ / ↑ / Enter | 空格暂停；顶部穿出升层，白底圆角 + 细缝 |
 | 扫雷 | 左键翻开 / 右键标记 | 自选尺寸与密度，红色圆标标记 |
 | 五子棋 | 点击落子 | 独弈 / 对弈（Rapfi 引擎） |
-| 象棋 | 点击选子与落子 | 人机、难度；Fairy-Stockfish |
+| 象棋 | 点击选子与落子 | 人机、难度；Pikafish |
 | 围棋 | 点击落子 | 停一手、数目、贴目；KataGo |
 | 消消乐 | 点击交换相邻宝石 | 连锁、提示、无解重排 |
 | 打砖块 | 鼠标 / ←→，Enter 发球 | 球从顶部穿出升层 |
@@ -41,14 +41,14 @@
 
 | 引擎 | 游戏 | 协议 | 下载 |
 | --- | --- | --- | --- |
-| Fairy-Stockfish | 象棋 | UCI | 1.7 MB，裸 exe |
+| Pikafish | 象棋 | UCI | 53.6 MB，7z（需要系统里有 7z） |
 | Rapfi | 五子棋 | Gomocup | 36.8 MB，7z（需要系统里有 7z） |
 | KataGo | 围棋 | GTP | 约 15 MB（Eigen CPU 版 + b6c96 小模型） |
 
 - 难度直连引擎强度：象棋 0.3 / 0.7 / 1.6 秒，五子棋 0.3 / 0.8 / 1.6 秒，围棋 8 / 40 / 160 visits；对弈页的难度选项就是这个映射。
 - 引擎进程在对局时懒启动，空闲 10 分钟退出；宿主服务随 Harness 启动，引擎面板关闭时不轮询。
 - 客户端每 3 秒探测，服务恢复后自动连上；宿主代码更新后需要重启 Harness 才会重新加载（`engines/sidecar.log` 记录启动与错误）。
-- Rapfi 的发布包只有 7z，需要 `7z` 在 PATH 里（或 `%USERPROFILE%\scoop\shims\7z.exe`）；KataGo 的模型首次安装时从 katagotraining.org 下载，之后离线可用。
+- Pikafish 和 Rapfi 的发布包都是 7z，需要 `7z` 在 PATH 里（或 `%USERPROFILE%\scoop\shims\7z.exe`）；KataGo 的模型首次安装时从 katagotraining.org 下载，之后离线可用。
 - 围棋的 GTP 走子用 `loadsgf` 载入当前盘面；五子棋用 Gomocup 的 `BOARD` 协议，不依赖历史着法。
 
 ## 截图
@@ -104,7 +104,7 @@ dsh-minigame-list/
 - 客户端在 `client.js` 里通过 `window.__ModuleLoader__.load({ id, factory })` 注册，向 `shell.overlay` 插槽注册 `minigame-launcher`。
 - 游戏均为纯函数 + React 组件；`tools/*-logic-check.mjs` 是本地逻辑回归脚本（从源码抽取纯函数在 `node:vm` 里跑）。
 - 客户端改动刷新页面即可（profile 内为符号链接）；宿主（`index.js` / `sidecar.mjs` / `lib/` / `engines.json`）改动要重启 Harness 才会重新加载。
-- 引擎相关测试：`tools/sidecar-test.mjs`（假 UCI 引擎、端口与来源校验）、`tools/engine-test.mjs`（真实下载）、`tools/xq-fen-test.mjs`（象棋 FEN 与真实引擎走子）。
+- 引擎相关测试：`tools/sidecar-test.mjs`（假 UCI/Gomocup 引擎、端口与来源校验）、`tools/engine-test.mjs`（象棋真实下载）、`tools/xq-fen-test.mjs`（象棋 FEN 与真实引擎走子）、`tools/xq-engine-test.mjs`（Pikafish 走子并用客户端规则校验）、`tools/go-engine-test.mjs`（KataGo 安装 + GTP 走子）、`tools/gomoku-engine-test.mjs`（Rapfi 安装 + Gomocup 走子）、`tools/chess-logic-check.mjs`（象棋/围棋规则与随机对局）。
 
 ## License
 
