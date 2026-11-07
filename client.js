@@ -832,7 +832,7 @@ window.__ModuleLoader__.load({
       '.mg-gomoku-stone[data-color="1"]{background:radial-gradient(circle at 35% 30%,#4b4b4e,#101012)}',
       '.mg-gomoku-stone[data-color="2"]{background:radial-gradient(circle at 35% 30%,#ffffff,#d8d8db)}',
       '.mg-gomoku-stone[data-last="true"]{box-shadow:0 0 0 2px #e11d48,inset 0 1px 2px rgba(255,255,255,.16),0 2px 3px rgba(0,0,0,.35)}',
-      '.mg-gomoku-stone[data-last="true"],.mg-go-stone[data-last="true"],.mg-xq-piece[data-last="true"]{animation:mg-piece-in .26s cubic-bezier(.2,.8,.2,1)}',
+      '.mg-gomoku-stone[data-last="true"],.mg-go-stone[data-last="true"]{animation:mg-piece-in .26s cubic-bezier(.2,.8,.2,1)}',
       '.mg-gomoku-stone[data-last="true"]::after,.mg-go-stone[data-last="true"]::after{content:"";position:absolute;inset:-30%;border-radius:50%;border:1.5px solid rgba(225,29,72,.55);animation:mg-halo 1.6s ease-out infinite;pointer-events:none}',
       '@keyframes mg-piece-in{0%{scale:.35;opacity:.15}65%{scale:1.08;opacity:1}100%{scale:1}}',
       '@keyframes mg-halo{0%{transform:scale(.72);opacity:.85}70%{transform:scale(1.12);opacity:0}100%{opacity:0}}',
@@ -849,8 +849,12 @@ window.__ModuleLoader__.load({
       '.mg-xq-lines{position:absolute;inset:0;width:100%;height:100%;overflow:visible}',
       '.mg-xq-river{position:absolute;top:50%;transform:translateY(-50%);font-family:"KaiTi","STKaiti","Kaiti SC","楷体","Songti SC",serif;font-size:30px;font-size:9cqw;font-weight:600;line-height:1;letter-spacing:.18em;color:#7a5a34;opacity:.82;pointer-events:none;white-space:nowrap}',
       '.mg-xq-piece{position:absolute;transform:translate(-50%,-50%);width:11%;aspect-ratio:1;height:auto;padding:0;border:0;background:none;cursor:pointer;overflow:visible;transition:transform .12s ease}',
-      '.mg-xq-disc{display:block;width:100%;height:100%;overflow:visible;transform-origin:center;transition:transform .12s ease,filter .12s ease}',
-      '.mg-xq-piece:hover .mg-xq-disc{transform:scale(1.03);filter:brightness(1.03)}',
+      '.mg-xq-disc{display:block;width:100%;height:100%;overflow:visible;transition:filter .12s ease}',
+      '.mg-xq-disc-body{transform-box:view-box;transform-origin:50% 50%;transition:transform .12s ease}',
+      '.mg-xq-piece:hover .mg-xq-disc{filter:brightness(1.03)}',
+      '.mg-xq-piece:hover .mg-xq-disc-body{transform:scale(1.03)}',
+      '.mg-xq-piece[data-last="true"] .mg-xq-disc-body{animation:mg-xq-disc-in .26s cubic-bezier(.2,.8,.2,1)}',
+      '@keyframes mg-xq-disc-in{0%{transform:scale(.35);opacity:.15}65%{transform:scale(1.08)}100%{transform:scale(1)}}',
       '.mg-xq-piece:focus-visible{outline:none}',
       '.mg-xq-piece:focus-visible .mg-xq-disc-face{stroke:#e11d48;stroke-width:3.4}',
       '.mg-xq-char{font-family:"KaiTi","STKaiti","Kaiti SC","楷体","Songti SC","Noto Serif SC",serif;font-size:50px;font-weight:700;fill:currentColor;pointer-events:none}',
@@ -969,7 +973,7 @@ window.__ModuleLoader__.load({
       '.mg-heart[data-lost="true"]{opacity:.35;color:#cbd5e1}',
       '.mg-breakout-lostheart{position:absolute;top:0;width:16px;height:16px;color:#e11d48;fill:currentColor;pointer-events:none;animation:mg-breakout-heart-fall 1.1s linear forwards}',
       '@keyframes mg-breakout-heart-fall{0%{opacity:1;transform:translateY(0) rotate(0deg)}15%{transform:translateY(-18px) rotate(-40deg)}30%{transform:translateY(-12px) rotate(10deg)}45%{transform:translateY(12px) rotate(80deg)}60%{transform:translateY(52px) rotate(150deg)}75%{transform:translateY(112px) rotate(220deg)}88%{opacity:1;transform:translateY(188px) rotate(280deg)}100%{opacity:0;transform:translateY(280px) rotate(340deg)}}',
-      '@media (prefers-reduced-motion:reduce){.mg-panel,.mg-dock,.mg-view,.mg-card,.mg-console,.mg-launch,.mg-cbtn,.mg-caction,.mg-close,.mg-cell{transition:none}.mg-dot{animation:none}.mg-panel[data-shown="true"] .mg-card,.mg-panel[data-shown="true"] .mg-kicker-rule{animation:none}.mg-eng-progress span,.mg-eng-skeleton{animation:none}.mg-gomoku-stone[data-last="true"],.mg-go-stone[data-last="true"],.mg-xq-piece[data-last="true"],.mg-gomoku-over{animation:none}.mg-stone-core,.mg-stone-ring{animation:none}.mg-xq-sel-halo,.mg-xq-sel-ring,.mg-xq-capture-ring,.mg-xq-dot-halo{animation:none}.mg-gomoku-stone[data-last="true"]::after,.mg-go-stone[data-last="true"]::after{animation:none;content:none}}',
+      '@media (prefers-reduced-motion:reduce){.mg-panel,.mg-dock,.mg-view,.mg-card,.mg-console,.mg-launch,.mg-cbtn,.mg-caction,.mg-close,.mg-cell{transition:none}.mg-dot{animation:none}.mg-panel[data-shown="true"] .mg-card,.mg-panel[data-shown="true"] .mg-kicker-rule{animation:none}.mg-eng-progress span,.mg-eng-skeleton{animation:none}.mg-gomoku-stone[data-last="true"],.mg-go-stone[data-last="true"],.mg-xq-piece[data-last="true"],.mg-gomoku-over{animation:none}.mg-stone-core,.mg-stone-ring{animation:none}.mg-xq-sel-halo,.mg-xq-sel-ring,.mg-xq-capture-ring,.mg-xq-dot-halo{animation:none}.mg-xq-disc-body{animation:none;transition:none}.mg-gomoku-stone[data-last="true"]::after,.mg-go-stone[data-last="true"]::after{animation:none;content:none}}',
     ].join('');
 
     /* Shelf entries. `w`/`h` are the frame the menu morphs into; `extra` is the
@@ -2552,6 +2556,7 @@ window.__ModuleLoader__.load({
             onClick: () => choose(i),
           },
             h('svg', { className: 'mg-xq-disc', viewBox: '0 0 100 100', 'aria-hidden': 'true' },
+              h('g', { className: 'mg-xq-disc-body' },
               isSelected
                 ? h('circle', { className: 'mg-xq-sel-halo', cx: 50, cy: 50, r: 52, fill: 'rgba(225,29,72,.10)' })
                 : null,
@@ -2608,6 +2613,7 @@ window.__ModuleLoader__.load({
                   strokeWidth: 2,
                 })
                 : null,
+              ),
             ),
           ));
         }
