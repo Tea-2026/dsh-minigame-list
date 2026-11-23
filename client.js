@@ -136,8 +136,8 @@ window.__ModuleLoader__.load({
       komi: '贴目',
       sizeLabel: '大小',
       boardSize: '棋盘',
-      sizeStandard: '标准',
-      sizeGo: 'Go 尺寸',
+      sizeStandard: '中盘',
+      sizeGo: '标准',
       sizeMini: '微缩',
       densityLabel: '密度',
       small: '小',
@@ -309,8 +309,8 @@ window.__ModuleLoader__.load({
       komi: 'komi',
       sizeLabel: 'Size',
       boardSize: 'Board',
-      sizeStandard: 'Standard',
-      sizeGo: 'Go size',
+      sizeStandard: 'Medium',
+      sizeGo: 'Standard',
       sizeMini: 'Mini',
       densityLabel: 'Density',
       small: 'Small',
@@ -1445,9 +1445,9 @@ window.__ModuleLoader__.load({
     const GO_N = 19;
     const GO_KOMI = 7.5;
     const GO_SIZES = [
+      { id: 'mini', n: 9 },
       { id: 'standard', n: 13 },
       { id: 'go', n: 19 },
-      { id: 'mini', n: 9 },
     ];
     const GO_KOMI_BY_SIZE = { 9: 5.5, 13: 6.5, 19: 7.5 };
 
@@ -1455,7 +1455,7 @@ window.__ModuleLoader__.load({
       for (let i = 0; i < GO_SIZES.length; i += 1) {
         if (GO_SIZES[i].id === id) return GO_SIZES[i];
       }
-      return GO_SIZES[1];
+      return GO_SIZES[2];
     }
 
     function goKomi(n) {
@@ -2063,7 +2063,6 @@ window.__ModuleLoader__.load({
             h('span', null, t('noGuess')),
             h('span', { className: 'mg-switch', 'aria-hidden': 'true' }),
           ),
-          h('div', { className: 'mg-mines-note' }, t('noGuessHint')),
           h('button', {
             type: 'button',
             className: 'mg-mines-start',
