@@ -135,6 +135,10 @@ window.__ModuleLoader__.load({
       captured: '提子',
       komi: '贴目',
       sizeLabel: '大小',
+      boardSize: '棋盘',
+      sizeStandard: '标准',
+      sizeGo: 'Go 尺寸',
+      sizeMini: '微缩',
       densityLabel: '密度',
       small: '小',
       medium: '中',
@@ -147,6 +151,8 @@ window.__ModuleLoader__.load({
       safeFirst: '首击保护',
       noGuess: '无死局（不用猜）',
       noGuessFailed: '这一局没找到无死局布局，已退回普通棋盘',
+      noGuessReduced: '无死局布局已自动降密：',
+      noGuessHint: '密集棋盘会自动降密，保证不用猜',
       start: '开始',
       newGame: '新局',
       win: '全部扫清',
@@ -296,6 +302,10 @@ window.__ModuleLoader__.load({
       captured: 'captures',
       komi: 'komi',
       sizeLabel: 'Size',
+      boardSize: 'Board',
+      sizeStandard: 'Standard',
+      sizeGo: 'Go size',
+      sizeMini: 'Mini',
       densityLabel: 'Density',
       small: 'Small',
       medium: 'Medium',
@@ -308,6 +318,8 @@ window.__ModuleLoader__.load({
       safeFirst: 'Safe first click',
       noGuess: 'No-guess board',
       noGuessFailed: 'No guess-free layout found; using a normal board',
+      noGuessReduced: 'No-guess layout reduced:',
+      noGuessHint: 'Dense boards are auto-reduced to stay guess-free',
       start: 'Start',
       newGame: 'New game',
       win: 'Board cleared',
@@ -456,7 +468,7 @@ window.__ModuleLoader__.load({
 
     /* One random seeding pass. Mines are seeded on the first reveal so the
      * opening click can be made safe (its cell and neighbours stay clear). */
-    function minesSeed(board, safeIndex, safeFirst) {
+    function minesSeed(board, safeIndex, safeFirst, mineCount) {
       const cells = board.cells.map((cell) => ({
         ...cell, mine: false, n: 0, open: false, flag: false,
       }));
@@ -467,7 +479,8 @@ window.__ModuleLoader__.load({
         eachMinesNeighbor(board.cols, board.rows, safeIndex, (index) => forbidden.add(index));
       }
       const available = total - forbidden.size;
-      const mines = Math.min(board.mines, Math.max(0, available));
+      const target = Number.isFinite(mineCount) ? mineCount : board.mines;
+      const mines = Math.min(Math.max(0, target), Math.max(0, available));
       let placed = 0;
       while (placed < mines) {
         const index = Math.floor(Math.random() * total);
@@ -580,15 +593,25 @@ window.__ModuleLoader__.load({
     function placeMines(board, safeIndex, safeFirst, noGuess) {
       if (!noGuess) return minesSeed(board, safeIndex, safeFirst);
       const area = board.cols * board.rows;
-      const attempts = area <= 100 ? 500 : area <= 144 ? 320 : area <= 256 ? 120 : 50;
+      const attempts = area <= 100 ? 300 : area <= 144 ? 200 : area <= 256 ? 80 : 40;
+      const base = board.mines;
+      const steps = [1, 0.85, 0.7, 0.55, 0.4];
       let last = null;
-      for (let attempt = 0; attempt < attempts; attempt += 1) {
-        const seeded = minesSeed(board, safeIndex, true);
-        last = seeded;
-        if (minesSolvable(seeded, safeIndex)) return seeded;
+      for (let step = 0; step < steps.length; step += 1) {
+        const target = Math.max(1, Math.round(base * steps[step]));
+        for (let attempt = 0; attempt < attempts; attempt += 1) {
+          const seeded = minesSeed(board, safeIndex, true, target);
+          last = seeded;
+          if (minesSolvable(seeded, safeIndex)) {
+            seeded.guessFree = true;
+            seeded.noGuessReduced = target < base;
+            seeded.noGuessOriginal = base;
+            return seeded;
+          }
+        }
       }
       if (last) last.guessFree = false;
-      return last || minesSeed(board, safeIndex, true);
+      return last || minesSeed(board, safeIndex, true, base);
     }
 
     function openMinesArea(board, index) {
@@ -1097,19 +1120,34 @@ window.__ModuleLoader__.load({
     const GOMOKU_N = 15;
     const GOMOKU_SETTINGS_KEY = 'dsh-minigame-list.gomoku.settings';
     const GOMOKU_DIRS = [[1, 0], [0, 1], [1, 1], [1, -1]];
+    const GOMOKU_SIZES = [
+      { id: 'standard', n: 15 },
+      { id: 'go', n: 19 },
+      { id: 'mini', n: 9 },
+    ];
+
+    function gomokuSize(id) {
+      for (let i = 0; i < GOMOKU_SIZES.length; i += 1) {
+        if (GOMOKU_SIZES[i].id === id) return GOMOKU_SIZES[i];
+      }
+      return GOMOKU_SIZES[0];
+    }
+
 
     function readGomokuSettings() {
       try {
         const raw = window.localStorage.getItem(GOMOKU_SETTINGS_KEY);
-        if (!raw) return { mode: 'solo', difficulty: 'normal', installed: false };
+        if (!raw) return { mode: 'solo', difficulty: 'normal', installed: false, size: 'standard' };
         const parsed = JSON.parse(raw);
+        const size = GOMOKU_SIZES.some((item) => item.id === parsed.size) ? parsed.size : 'standard';
         return {
           mode: parsed.mode === 'ai' ? 'ai' : 'solo',
           difficulty: parsed.difficulty === 'easy' || parsed.difficulty === 'hard' ? parsed.difficulty : 'normal',
           installed: parsed.installed === true,
+          size,
         };
       } catch (error) {
-        return { mode: 'solo', difficulty: 'normal', installed: false };
+        return { mode: 'solo', difficulty: 'normal', installed: false, size: 'standard' };
       }
     }
 
@@ -1121,13 +1159,13 @@ window.__ModuleLoader__.load({
       }
     }
 
-    function gomokuNew() {
-      return new Array(GOMOKU_N * GOMOKU_N).fill(0);
+    function gomokuNew(n = GOMOKU_N) {
+      return new Array(n * n).fill(0);
     }
 
-    function gomokuWins(board, index, stone) {
-      const x = index % GOMOKU_N;
-      const y = Math.floor(index / GOMOKU_N);
+    function gomokuWins(board, index, stone, n = GOMOKU_N) {
+      const x = index % n;
+      const y = Math.floor(index / n);
       for (let d = 0; d < GOMOKU_DIRS.length; d += 1) {
         const dx = GOMOKU_DIRS[d][0];
         const dy = GOMOKU_DIRS[d][1];
@@ -1135,8 +1173,8 @@ window.__ModuleLoader__.load({
         for (let s = -1; s <= 1; s += 2) {
           let nx = x + dx * s;
           let ny = y + dy * s;
-          while (nx >= 0 && nx < GOMOKU_N && ny >= 0 && ny < GOMOKU_N
-            && board[ny * GOMOKU_N + nx] === stone) {
+          while (nx >= 0 && nx < n && ny >= 0 && ny < n
+            && board[ny * n + nx] === stone) {
             count += 1;
             nx += dx * s;
             ny += dy * s;
@@ -1147,9 +1185,9 @@ window.__ModuleLoader__.load({
       return false;
     }
 
-    function gomokuLineScore(board, index, stone) {
-      const x = index % GOMOKU_N;
-      const y = Math.floor(index / GOMOKU_N);
+    function gomokuLineScore(board, index, stone, n = GOMOKU_N) {
+      const x = index % n;
+      const y = Math.floor(index / n);
       let total = 0;
       for (let d = 0; d < GOMOKU_DIRS.length; d += 1) {
         const dx = GOMOKU_DIRS[d][0];
@@ -1160,15 +1198,15 @@ window.__ModuleLoader__.load({
           let nx = x + dx * s;
           let ny = y + dy * s;
           let run = 0;
-          while (nx >= 0 && nx < GOMOKU_N && ny >= 0 && ny < GOMOKU_N
-            && board[ny * GOMOKU_N + nx] === stone) {
+          while (nx >= 0 && nx < n && ny >= 0 && ny < n
+            && board[ny * n + nx] === stone) {
             run += 1;
             nx += dx * s;
             ny += dy * s;
           }
           count += run;
-          if (nx >= 0 && nx < GOMOKU_N && ny >= 0 && ny < GOMOKU_N
-            && board[ny * GOMOKU_N + nx] === 0) open += 1;
+          if (nx >= 0 && nx < n && ny >= 0 && ny < n
+            && board[ny * n + nx] === 0) open += 1;
         }
         if (count >= 5) total += 1000000;
         else if (count === 4 && open === 2) total += 60000;
@@ -1183,34 +1221,34 @@ window.__ModuleLoader__.load({
       return total;
     }
 
-    function gomokuCandidates(board) {
+    function gomokuCandidates(board, n = GOMOKU_N) {
       const list = [];
-      for (let y = 0; y < GOMOKU_N; y += 1) {
-        for (let x = 0; x < GOMOKU_N; x += 1) {
-          const index = y * GOMOKU_N + x;
+      for (let y = 0; y < n; y += 1) {
+        for (let x = 0; x < n; x += 1) {
+          const index = y * n + x;
           if (board[index] !== 0) continue;
           let near = false;
           for (let dy = -2; dy <= 2 && !near; dy += 1) {
             for (let dx = -2; dx <= 2; dx += 1) {
               const nx = x + dx;
               const ny = y + dy;
-              if (nx < 0 || nx >= GOMOKU_N || ny < 0 || ny >= GOMOKU_N) continue;
-              if (board[ny * GOMOKU_N + nx] !== 0) { near = true; break; }
+              if (nx < 0 || nx >= n || ny < 0 || ny >= n) continue;
+              if (board[ny * n + nx] !== 0) { near = true; break; }
             }
           }
           if (near) list.push(index);
         }
       }
-      if (list.length === 0) list.push(Math.floor((GOMOKU_N * GOMOKU_N) / 2));
+      if (list.length === 0) list.push(Math.floor((n * n) / 2));
       return list;
     }
 
     /* AI plays white (2): own win first, then the opponent's, then the best
      * attack + defence score; difficulty widens how many top moves it samples. */
-    function gomokuReply(board, difficulty) {
-      const scored = gomokuCandidates(board).map((index) => {
-        const attack = gomokuLineScore(board, index, 2);
-        const defend = gomokuLineScore(board, index, 1);
+    function gomokuReply(board, difficulty, n = GOMOKU_N) {
+      const scored = gomokuCandidates(board, n).map((index) => {
+        const attack = gomokuLineScore(board, index, 2, n);
+        const defend = gomokuLineScore(board, index, 1, n);
         return { index, attack, defend, value: attack * 1.02 + defend };
       });
       scored.sort((a, b) => b.value - a.value);
@@ -1923,6 +1961,7 @@ window.__ModuleLoader__.load({
             h('span', null, t('noGuess')),
             h('span', { className: 'mg-switch', 'aria-hidden': 'true' }),
           ),
+          h('div', { className: 'mg-mines-note' }, t('noGuessHint')),
           h('button', {
             type: 'button',
             className: 'mg-mines-start',
@@ -1965,7 +2004,10 @@ window.__ModuleLoader__.load({
         ),
         settings.noGuess && board.placed && board.guessFree === false
           ? h('div', { className: 'mg-mines-note' }, t('noGuessFailed'))
-          : null,
+          : settings.noGuess && board.placed && board.noGuessReduced
+            ? h('div', { className: 'mg-mines-note' },
+              t('noGuessReduced') + board.mines + ' / ' + board.noGuessOriginal + ' ' + t('levelMines'))
+            : null,
         h('div', { className: 'mg-mines-body' },
           h('div', {
             className: 'mg-mines-board',
@@ -1995,7 +2037,8 @@ window.__ModuleLoader__.load({
     function GomokuGame(props) {
       const { t, paused, restartTick, undoTick } = props;
       const [settings, setSettings] = useState(readGomokuSettings);
-      const [board, setBoard] = useState(gomokuNew);
+      const n = gomokuSize(settings.size).n;
+      const [board, setBoard] = useState(() => gomokuNew(n));
       const [status, setStatus] = useState('setup');
       const [turn, setTurn] = useState(1);
       const [result, setResult] = useState(0);
@@ -2012,14 +2055,14 @@ window.__ModuleLoader__.load({
       };
 
       const startGame = useCallback(() => {
-        setBoard(gomokuNew());
+        setBoard(gomokuNew(n));
         setStatus('playing');
         setTurn(1);
         setResult(0);
         setLast(-1);
         setThinking(false);
         historyRef.current = [];
-      }, []);
+      }, [n]);
 
       useEffect(() => {
         if (restartTick === lastExtra.current) return;
@@ -2037,20 +2080,20 @@ window.__ModuleLoader__.load({
         const id = window.setTimeout(async () => {
           const stones = [];
           for (let i = 0; i < board.length; i += 1) {
-            if (board[i]) stones.push([i % GOMOKU_N, Math.floor(i / GOMOKU_N), board[i]]);
+            if (board[i]) stones.push([i % n, Math.floor(i / n), board[i]]);
           }
           const reply = await mgEngineMove('gomoku', {
-            size: GOMOKU_N, color: 2, stones, level: settings.difficulty,
+            size: n, color: 2, stones, level: settings.difficulty,
           }, 30000);
           if (dead) return;
           setThinking(false);
           let move = null;
           const parsed = /^(\d+),(\d+)$/.exec(String(reply || '').trim());
           if (parsed) {
-            const index = Number(parsed[2]) * GOMOKU_N + Number(parsed[1]);
+            const index = Number(parsed[2]) * n + Number(parsed[1]);
             if (index >= 0 && index < board.length && board[index] === 0) move = index;
           }
-          if (move === null) move = gomokuReply(board, settings.difficulty);
+          if (move === null) move = gomokuReply(board, settings.difficulty, n);
           if (move < 0 || board[move] !== 0) move = board.indexOf(0);
           if (move < 0) {
             setResult(3);
@@ -2065,7 +2108,7 @@ window.__ModuleLoader__.load({
           next[move] = 2;
           setBoard(next);
           setLast(move);
-          if (gomokuWins(next, move, 2)) {
+          if (gomokuWins(next, move, 2, n)) {
             setResult(2);
             setStatus('over');
           } else if (next.indexOf(0) === -1) {
@@ -2079,7 +2122,7 @@ window.__ModuleLoader__.load({
           dead = true;
           window.clearTimeout(id);
         };
-      }, [settings.mode, settings.difficulty, status, turn, result, paused, board]);
+      }, [settings.mode, settings.difficulty, status, turn, result, paused, board, n]);
 
       useEffect(() => {
         if (undoTick === lastUndo.current) return;
@@ -2112,7 +2155,7 @@ window.__ModuleLoader__.load({
         next[index] = turn;
         setBoard(next);
         setLast(index);
-        if (gomokuWins(next, index, turn)) {
+        if (gomokuWins(next, index, turn, n)) {
           setResult(turn);
           setStatus('over');
           return;
@@ -2128,12 +2171,12 @@ window.__ModuleLoader__.load({
       const onBoardClick = (event) => {
         if (paused || status !== 'playing' || result) return;
         const rect = event.currentTarget.getBoundingClientRect();
-        const stepX = rect.width / (GOMOKU_N - 1);
-        const stepY = rect.height / (GOMOKU_N - 1);
+        const stepX = rect.width / (n - 1);
+        const stepY = rect.height / (n - 1);
         const x = Math.round((event.clientX - rect.left) / stepX);
         const y = Math.round((event.clientY - rect.top) / stepY);
-        if (x < 0 || x >= GOMOKU_N || y < 0 || y >= GOMOKU_N) return;
-        place(y * GOMOKU_N + x);
+        if (x < 0 || x >= n || y < 0 || y >= n) return;
+        place(y * n + x);
       };
 
       if (status === 'setup') {
@@ -2164,6 +2207,21 @@ window.__ModuleLoader__.load({
               ),
             ),
           ),
+          h('div', { className: 'mg-mines-group' },
+            h('span', { className: 'mg-mines-group-label' }, t('boardSize')),
+            h('div', { className: 'mg-mines-chips' },
+              GOMOKU_SIZES.map((item) => h('button', {
+                key: item.id,
+                type: 'button',
+                className: 'mg-chip',
+                'aria-pressed': settings.size === item.id ? 'true' : 'false',
+                onClick: () => save({ size: item.id }),
+              },
+                h('b', null, t(item.id === 'go' ? 'sizeGo' : item.id === 'mini' ? 'sizeMini' : 'sizeStandard')),
+                h('span', null, item.n + '×' + item.n),
+              )),
+            ),
+          ),
           ai
             ? h('div', { className: 'mg-mines-group' },
               h('span', { className: 'mg-mines-group-label' }, t('difficultyLabel')),
@@ -2192,8 +2250,8 @@ window.__ModuleLoader__.load({
       const lines = [];
       const edge = 0.2;
       const inner = 100 - edge;
-      for (let i = 0; i < GOMOKU_N; i += 1) {
-        const raw = (i * 100) / (GOMOKU_N - 1);
+      for (let i = 0; i < n; i += 1) {
+        const raw = (i * 100) / (n - 1);
         const p = raw <= 0 ? edge : (raw >= 100 ? inner : raw);
         lines.push(h('line', {
           key: 'v' + i, x1: p, y1: edge, x2: p, y2: inner, stroke: '#7a5a34', strokeWidth: 0.34, opacity: 0.5,
@@ -2202,20 +2260,26 @@ window.__ModuleLoader__.load({
           key: 'h' + i, x1: edge, y1: p, x2: inner, y2: p, stroke: '#7a5a34', strokeWidth: 0.34, opacity: 0.5,
         }));
       }
-      [[3, 3], [11, 3], [3, 11], [11, 11], [7, 7]].forEach(([sx, sy]) => {
+      const star = n === 19
+        ? [[3, 3], [15, 3], [3, 15], [15, 15], [9, 9]]
+        : n === 9
+          ? [[2, 2], [6, 2], [2, 6], [6, 6], [4, 4]]
+          : [[3, 3], [11, 3], [3, 11], [11, 11], [7, 7]];
+      star.forEach(([sx, sy]) => {
         lines.push(h('circle', {
           key: 's' + sx + '-' + sy,
-          cx: (sx * 100) / (GOMOKU_N - 1),
-          cy: (sy * 100) / (GOMOKU_N - 1),
+          cx: (sx * 100) / (n - 1),
+          cy: (sy * 100) / (n - 1),
           r: 0.85, fill: '#7a5a34', opacity: 0.75,
         }));
       });
 
+      const stoneR = 46.2 / (n - 1);
       const stoneMarks = [];
       for (let i = 0; i < board.length; i += 1) {
         if (board[i] === 0) continue;
-        const cx = ((i % GOMOKU_N) * 100) / (GOMOKU_N - 1);
-        const cy = (Math.floor(i / GOMOKU_N) * 100) / (GOMOKU_N - 1);
+        const cx = ((i % n) * 100) / (n - 1);
+        const cy = (Math.floor(i / n) * 100) / (n - 1);
         stoneMarks.push(h('g', {
           key: 's' + i, className: 'mg-stone-svg', 'data-last': i === last ? 'true' : 'false',
         },
@@ -2223,14 +2287,14 @@ window.__ModuleLoader__.load({
             className: 'mg-stone-core',
             cx,
             cy,
-            r: 3.3,
+            r: stoneR,
             fill: board[i] === 1 ? 'url(#mg-stone-black)' : 'url(#mg-stone-white)',
             stroke: 'rgba(20,20,22,.28)',
             strokeWidth: 0.12,
           }),
           i === last
             ? h('circle', {
-              className: 'mg-stone-ring', cx, cy, r: 3.65, fill: 'none', stroke: '#e11d48', strokeWidth: 0.3,
+              className: 'mg-stone-ring', cx, cy, r: stoneR * 1.106, fill: 'none', stroke: '#e11d48', strokeWidth: 0.3,
             })
             : null,
         ));
@@ -2289,7 +2353,7 @@ window.__ModuleLoader__.load({
     function readBoardSettings(key) {
       try {
         const raw = window.localStorage.getItem(key);
-        if (!raw) return { mode: 'solo', difficulty: 'normal', installed: false };
+        if (!raw) return { mode: 'solo', difficulty: 'normal', installed: false, size: 'standard' };
         const parsed = JSON.parse(raw);
         return {
           mode: parsed.mode === 'ai' ? 'ai' : 'solo',
@@ -2297,7 +2361,7 @@ window.__ModuleLoader__.load({
           installed: parsed.installed === true,
         };
       } catch (error) {
-        return { mode: 'solo', difficulty: 'normal', installed: false };
+        return { mode: 'solo', difficulty: 'normal', installed: false, size: 'standard' };
       }
     }
 
