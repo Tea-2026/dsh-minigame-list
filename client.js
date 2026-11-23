@@ -149,7 +149,7 @@ window.__ModuleLoader__.load({
       dense: '密集',
       levelMines: '雷',
       safeFirst: '首击保护',
-      noGuess: '无死局（不用猜）',
+      noGuess: '无死局',
       noGuessFailed: '这一局没找到无死局布局，已退回普通棋盘',
       noGuessReduced: '无死局布局已自动降密：',
       noGuessHint: '无死局模式会一直刷新布局；超过 0.3 秒可以返回或直接开始',
