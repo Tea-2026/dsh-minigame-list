@@ -907,7 +907,9 @@ window.__ModuleLoader__.load({
       '.mg-mines-hud{flex:none;display:flex;align-items:center;justify-content:space-between;gap:8px;height:18px;font-size:11px;color:var(--dsw-alias-label-secondary);pointer-events:none}',
       '.mg-mines-hud-left{display:inline-flex;align-items:center;gap:5px}',
       '.mg-mines-note{flex:none;padding:0 2px;font-size:10px;line-height:1.4;color:var(--dsw-alias-label-secondary)}',
-      '.mg-mines-wait{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:18px;text-align:center;border-radius:14px;background:var(--dsw-alias-bg-base,#fff)}',
+      '.mg-mines-wait{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:18px;text-align:center;border-radius:14px;background:var(--dsw-alias-bg-base,#fff);overflow:hidden}',
+      '.mg-mines-wait::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 36%,rgba(255,255,255,.95),rgba(255,255,255,0) 62%),radial-gradient(circle at 50% 80%,rgba(255,242,218,.65),rgba(255,242,218,0) 58%);opacity:.2;animation:mg-mines-breathe 4.4s ease-in-out infinite}',
+      '.mg-mines-wait>*{position:relative;z-index:1}',
       '.mg-mines-spinner{width:26px;height:26px;border-radius:50%;border:2px solid #e6e8ec;border-top-color:#0f1115;animation:mg-mines-spin .8s linear infinite}',
       '@keyframes mg-mines-spin{to{transform:rotate(360deg)}}',
       '.mg-mines-wait-title{font-size:14px;font-weight:600}',
@@ -933,6 +935,9 @@ window.__ModuleLoader__.load({
       '.mg-mines-btn-ghost{background:color-mix(in srgb, var(--dsw-alias-label-primary) 8%, transparent);color:var(--dsw-alias-label-primary)}',
       '.mg-mines-btn:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:2px}',
       '.mg-mines-setup{position:absolute;inset:0;display:flex;flex-direction:column;gap:8px;padding:12px;overflow:auto}',
+      '.mg-mines-setup::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 30% 16%,rgba(255,255,255,.95),rgba(255,255,255,0) 58%),radial-gradient(circle at 74% 88%,rgba(255,240,212,.7),rgba(255,240,212,0) 56%);opacity:.18;animation:mg-mines-breathe 4.4s ease-in-out infinite}',
+      '.mg-mines-setup>*{position:relative;z-index:1}',
+      '@keyframes mg-mines-breathe{0%,100%{opacity:.14;transform:scale(1)}50%{opacity:.48;transform:scale(1.035)}}',
       '.mg-mines-setup-head h3{margin:0;font-size:14px;font-weight:600}',
       '.mg-mines-setup-head p{margin:3px 0 0;font-size:11.5px;line-height:1.45;color:var(--dsw-alias-label-secondary)}',
       '.mg-mines-group{display:flex;flex-direction:column;gap:6px;margin-top:2px}',
@@ -1109,7 +1114,7 @@ window.__ModuleLoader__.load({
       '.mg-heart[data-lost="true"]{opacity:.35;color:#cbd5e1}',
       '.mg-breakout-lostheart{position:absolute;top:0;width:16px;height:16px;color:#e11d48;fill:currentColor;pointer-events:none;animation:mg-breakout-heart-fall 1.1s linear forwards}',
       '@keyframes mg-breakout-heart-fall{0%{opacity:1;transform:translateY(0) rotate(0deg)}15%{transform:translateY(-18px) rotate(-40deg)}30%{transform:translateY(-12px) rotate(10deg)}45%{transform:translateY(12px) rotate(80deg)}60%{transform:translateY(52px) rotate(150deg)}75%{transform:translateY(112px) rotate(220deg)}88%{opacity:1;transform:translateY(188px) rotate(280deg)}100%{opacity:0;transform:translateY(280px) rotate(340deg)}}',
-      '@media (prefers-reduced-motion:reduce){.mg-panel,.mg-dock,.mg-view,.mg-card,.mg-console,.mg-launch,.mg-cbtn,.mg-caction,.mg-close,.mg-cell{transition:none}.mg-dot{animation:none}.mg-panel[data-shown="true"] .mg-card,.mg-panel[data-shown="true"] .mg-kicker-rule{animation:none}.mg-eng-progress span,.mg-eng-skeleton{animation:none}.mg-gomoku-stone[data-last="true"],.mg-go-stone[data-last="true"],.mg-xq-piece[data-last="true"],.mg-gomoku-over{animation:none}.mg-stone-core,.mg-stone-ring{animation:none}.mg-mines-spinner{animation:none}.mg-xq-sel-halo,.mg-xq-sel-ring,.mg-xq-capture-ring,.mg-xq-dot-halo{animation:none}.mg-xq-disc-body{animation:none;transition:none}.mg-gomoku-stone[data-last="true"]::after,.mg-go-stone[data-last="true"]::after{animation:none;content:none}}',
+      '@media (prefers-reduced-motion:reduce){.mg-panel,.mg-dock,.mg-view,.mg-card,.mg-console,.mg-launch,.mg-cbtn,.mg-caction,.mg-close,.mg-cell{transition:none}.mg-dot{animation:none}.mg-panel[data-shown="true"] .mg-card,.mg-panel[data-shown="true"] .mg-kicker-rule{animation:none}.mg-eng-progress span,.mg-eng-skeleton{animation:none}.mg-gomoku-stone[data-last="true"],.mg-go-stone[data-last="true"],.mg-xq-piece[data-last="true"],.mg-gomoku-over{animation:none}.mg-stone-core,.mg-stone-ring{animation:none}.mg-mines-spinner{animation:none}.mg-mines-setup::before,.mg-mines-wait::before{animation:none}.mg-xq-sel-halo,.mg-xq-sel-ring,.mg-xq-capture-ring,.mg-xq-dot-halo{animation:none}.mg-xq-disc-body{animation:none;transition:none}.mg-gomoku-stone[data-last="true"]::after,.mg-go-stone[data-last="true"]::after{animation:none;content:none}}',
     ].join('');
 
     /* Shelf entries. `w`/`h` are the frame the menu morphs into; `extra` is the
