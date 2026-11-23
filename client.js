@@ -159,6 +159,13 @@ window.__ModuleLoader__.load({
       noGuessSearchHint: '超过 0.3 秒可以返回或直接开始',
       noGuessDirect: '直接开始（普通局）',
       noGuessSkipped: '本局按普通局开始（未验证甜品局）',
+      minesModeNormal: '普通',
+      minesModeNormalHint: '可猜',
+      minesModeDessertHint: '简单逻辑',
+      minesModeStrict: '无猜',
+      minesModeStrictHint: '完整约束',
+      strictSearching: '正在准备无猜局…',
+      strictSkipped: '本局按普通局开始（未验证无猜）',
       start: '开始',
       newGame: '新局',
       win: '全部扫清',
@@ -332,6 +339,13 @@ window.__ModuleLoader__.load({
       noGuessSearchHint: 'after 0.3s you can go back or start anyway',
       noGuessDirect: 'Start anyway (normal round)',
       noGuessSkipped: 'Started as a normal round (dessert round not checked)',
+      minesModeNormal: 'Normal',
+      minesModeNormalHint: 'guesses allowed',
+      minesModeDessertHint: 'simple rules',
+      minesModeStrict: 'No-guess',
+      minesModeStrictHint: 'full constraints',
+      strictSearching: 'Preparing a no-guess round…',
+      strictSkipped: 'Started as a normal round (no-guess not checked)',
       start: 'Start',
       newGame: 'New game',
       win: 'Board cleared',
@@ -426,7 +440,7 @@ window.__ModuleLoader__.load({
     function readMinesSettings() {
       try {
         const raw = window.localStorage.getItem(MINES_SETTINGS_KEY);
-        if (!raw) return { size: 'medium', density: 'normal', safeFirst: true, noGuess: false };
+        if (!raw) return { size: 'medium', density: 'normal', safeFirst: true, mode: 'normal' };
         const parsed = JSON.parse(raw);
         const size = MINES_SIZES.some((item) => item.id === parsed.size)
           ? parsed.size
@@ -434,9 +448,12 @@ window.__ModuleLoader__.load({
         const density = MINES_DENSITIES.some((item) => item.id === parsed.density)
           ? parsed.density
           : 'normal';
-        return { size, density, safeFirst: parsed.safeFirst !== false, noGuess: parsed.noGuess === true };
+        const mode = parsed.mode === 'dessert' || parsed.mode === 'strict'
+          ? parsed.mode
+          : (parsed.noGuess === true ? 'dessert' : 'normal');
+        return { size, density, safeFirst: parsed.safeFirst !== false, mode };
       } catch (error) {
-        return { size: 'medium', density: 'normal', safeFirst: true, noGuess: false };
+        return { size: 'medium', density: 'normal', safeFirst: true, mode: 'normal' };
       }
     }
 
@@ -600,6 +617,227 @@ window.__ModuleLoader__.load({
         if (!board.cells[i].mine && !state.open[i]) return false;
       }
       return true;
+    }
+
+    /* ---- standard no-guess solver ----
+     * Full frontier analysis: enumerate every mine layout compatible with the
+     * opened numbers and the remaining mine counter, then only open/flag cells
+     * that are forced in all layouts. This is the usual "no guess" check: it
+     * accepts harder boards than the local 1-2-1 rules, but never guesses. */
+    function minesCspOpen(state, board, index) {
+      const stack = [index];
+      while (stack.length > 0) {
+        const current = stack.pop();
+        const cell = board.cells[current];
+        if (cell.mine || state.open[current] || state.flag[current]) continue;
+        state.open[current] = true;
+        if (cell.n === 0) {
+          eachMinesNeighbor(board.cols, board.rows, current, (j) => {
+            if (!state.open[j] && !state.flag[j]) stack.push(j);
+          });
+        }
+      }
+    }
+
+    function minesCspStats(cells, cons, cap) {
+      const indexOf = new Map();
+      for (let i = 0; i < cells.length; i += 1) indexOf.set(cells[i], i);
+      const mapped = cons.map((c) => ({
+        cells: c.cells.map((j) => indexOf.get(j)),
+        need: c.need,
+      }));
+      const values = new Array(cells.length).fill(-1);
+      const byCount = new Map();
+      let models = 0;
+      let truncated = false;
+      const record = () => {
+        let total = 0;
+        for (let i = 0; i < values.length; i += 1) if (values[i] === 1) total += 1;
+        let entry = byCount.get(total);
+        if (!entry) {
+          entry = { models: 0, mines: new Array(cells.length).fill(0) };
+          byCount.set(total, entry);
+        }
+        entry.models += 1;
+        for (let i = 0; i < values.length; i += 1) if (values[i] === 1) entry.mines[i] += 1;
+        models += 1;
+        if (models > cap) truncated = true;
+      };
+      const rec = (remaining) => {
+        if (truncated) return;
+        if (remaining.length === 0) { record(); return; }
+        let pick = 0;
+        let pickScore = Infinity;
+        for (let i = 0; i < remaining.length; i += 1) {
+          const con = remaining[i];
+          const n = con.cells.length;
+          const k = con.need;
+          if (k < 0 || k > n) return;
+          let count = 1;
+          for (let t = 0; t < k; t += 1) count = (count * (n - t)) / (t + 1);
+          if (count < pickScore) { pickScore = count; pick = i; }
+        }
+        const con = remaining[pick];
+        const chosen = con.cells;
+        const others = remaining.filter((_, i) => i !== pick);
+        const assign = (isMine) => {
+          for (let i = 0; i < chosen.length; i += 1) values[chosen[i]] = isMine[i] ? 1 : 0;
+          const next = [];
+          let bad = false;
+          for (let oi = 0; oi < others.length; oi += 1) {
+            const other = others[oi];
+            let need = other.need;
+            const keep = [];
+            for (let ci = 0; ci < other.cells.length; ci += 1) {
+              const local = other.cells[ci];
+              const pos = chosen.indexOf(local);
+              if (pos >= 0) {
+                if (isMine[pos]) need -= 1;
+              } else {
+                keep.push(local);
+              }
+            }
+            if (need < 0 || need > keep.length) { bad = true; break; }
+            if (keep.length > 0) next.push({ cells: keep, need });
+          }
+          if (!bad) rec(next);
+          for (let i = 0; i < chosen.length; i += 1) values[chosen[i]] = -1;
+        };
+        const flags = new Array(chosen.length).fill(false);
+        const choose = (start, left) => {
+          if (truncated) return;
+          if (left === 0) { assign(flags); return; }
+          for (let i = start; i <= chosen.length - left; i += 1) {
+            flags[i] = true;
+            choose(i + 1, left - 1);
+            flags[i] = false;
+          }
+        };
+        choose(0, con.need);
+      };
+      rec(mapped);
+      return { byCount, truncated, models };
+    }
+
+    function minesCspSolve(board, startIndex) {
+      const total = board.cols * board.rows;
+      if (board.cells[startIndex].mine) return false;
+      const state = { open: new Array(total).fill(false), flag: new Array(total).fill(false) };
+      minesCspOpen(state, board, startIndex);
+      const cap = 60000;
+      for (let guard = 0; guard < total * 3 + 100; guard += 1) {
+        let opened = 0;
+        let flagged = 0;
+        for (let i = 0; i < total; i += 1) {
+          if (state.open[i]) opened += 1;
+          if (state.flag[i]) flagged += 1;
+        }
+        if (opened === total - board.mines) return true;
+        const constraints = [];
+        const frontier = new Set();
+        let invalid = false;
+        for (let i = 0; i < total; i += 1) {
+          if (!state.open[i]) continue;
+          const cell = board.cells[i];
+          if (cell.n === 0) continue;
+          let flags = 0;
+          const unknown = [];
+          eachMinesNeighbor(board.cols, board.rows, i, (j) => {
+            if (state.open[j]) return;
+            if (state.flag[j]) flags += 1;
+            else unknown.push(j);
+          });
+          if (unknown.length === 0) continue;
+          const need = cell.n - flags;
+          if (need < 0 || need > unknown.length) { invalid = true; break; }
+          constraints.push({ cells: unknown, need });
+          for (let k = 0; k < unknown.length; k += 1) frontier.add(unknown[k]);
+        }
+        if (invalid || constraints.length === 0) return false;
+        const parent = new Map();
+        const find = (x) => {
+          let root = x;
+          while (parent.get(root) !== root) root = parent.get(root);
+          while (parent.get(x) !== root) { const next = parent.get(x); parent.set(x, root); x = next; }
+          return root;
+        };
+        const union = (a, b) => { const ra = find(a); const rb = find(b); if (ra !== rb) parent.set(ra, rb); };
+        for (let c = 0; c < constraints.length; c += 1) {
+          const cells = constraints[c].cells;
+          for (let k = 0; k < cells.length; k += 1) if (!parent.has(cells[k])) parent.set(cells[k], cells[k]);
+          for (let k = 1; k < cells.length; k += 1) union(cells[0], cells[k]);
+        }
+        const groups = new Map();
+        for (let c = 0; c < constraints.length; c += 1) {
+          const root = find(constraints[c].cells[0]);
+          if (!groups.has(root)) groups.set(root, { cells: [], cons: [] });
+          groups.get(root).cons.push(constraints[c]);
+        }
+        for (const cell of frontier) {
+          const root = find(cell);
+          const group = groups.get(root);
+          if (group) group.cells.push(cell);
+        }
+        const unconstrained = total - opened - flagged - frontier.size;
+        const remaining = board.mines - flagged;
+        if (remaining < 0) return false;
+        const comps = [];
+        let minSum = 0;
+        let maxSum = 0;
+        let impossible = false;
+        for (const group of groups.values()) {
+          const stats = minesCspStats(group.cells, group.cons, cap);
+          if (stats.truncated || stats.byCount.size === 0) { impossible = true; break; }
+          let min = Infinity;
+          let max = -1;
+          for (const count of stats.byCount.keys()) {
+            if (count < min) min = count;
+            if (count > max) max = count;
+          }
+          if (!Number.isFinite(min) || max < 0) { impossible = true; break; }
+          comps.push({ cells: group.cells, stats, min, max });
+          minSum += min;
+          maxSum += max;
+        }
+        if (impossible) return false;
+        const safe = [];
+        const mined = [];
+        for (let ci = 0; ci < comps.length; ci += 1) {
+          const comp = comps[ci];
+          const otherMin = minSum - comp.min;
+          const otherMax = maxSum - comp.max;
+          const lo = Math.max(0, remaining - unconstrained - otherMax);
+          const hi = Math.min(comp.cells.length, remaining - otherMin);
+          if (lo > hi) return false;
+          const feasible = [];
+          for (const [count, entry] of comp.stats.byCount.entries()) {
+            if (count >= lo && count <= hi) feasible.push(entry);
+          }
+          if (feasible.length === 0) return false;
+          for (let li = 0; li < comp.cells.length; li += 1) {
+            let allMine = true;
+            let allSafe = true;
+            for (let fi = 0; fi < feasible.length; fi += 1) {
+              const entry = feasible[fi];
+              if (entry.models === 0) continue;
+              if (entry.mines[li] !== entry.models) allMine = false;
+              if (entry.mines[li] !== 0) allSafe = false;
+            }
+            if (allMine) mined.push(comp.cells[li]);
+            else if (allSafe) safe.push(comp.cells[li]);
+          }
+        }
+        if (safe.length === 0 && mined.length === 0) return false;
+        for (let i = 0; i < mined.length; i += 1) {
+          if (state.open[mined[i]] || state.flag[mined[i]]) continue;
+          state.flag[mined[i]] = true;
+        }
+        for (let i = 0; i < safe.length; i += 1) {
+          if (state.flag[safe[i]]) return false;
+          if (!state.open[safe[i]]) minesCspOpen(state, board, safe[i]);
+        }
+      }
+      return false;
     }
 
     function placeMines(board, safeIndex, safeFirst) {
@@ -1842,6 +2080,7 @@ window.__ModuleLoader__.load({
       const size = minesSize(settings.size);
       const density = minesDensity(settings.density);
       const mineTotal = minesCount(size, density);
+      const noGuessMode = settings.mode !== 'normal';
 
       /* The frame follows the chosen board size, so a bigger field grows the
        * whole window instead of squeezing the cells. */
@@ -1899,8 +2138,8 @@ window.__ModuleLoader__.load({
         writeMinesSettings(next);
       };
 
-      const toggleNoGuess = () => {
-        const next = { ...settings, noGuess: !settings.noGuess };
+      const chooseMode = (mode) => {
+        const next = { ...settings, mode };
         setSettings(next);
         writeMinesSettings(next);
       };
@@ -1918,6 +2157,7 @@ window.__ModuleLoader__.load({
 
       const beginSearch = (index) => {
         if (searchRef.current) return;
+        const solver = settings.mode === 'strict' ? minesCspSolve : minesSolvable;
         const token = { index, cancelled: false, attempts: 0, timer: 0, waiting: false };
         searchRef.current = token;
         setSearch({ index, attempts: 0, waiting: false });
@@ -1930,7 +2170,7 @@ window.__ModuleLoader__.load({
           while (!token.cancelled) {
             const seeded = minesSeed(board, index, true);
             token.attempts += 1;
-            if (minesSolvable(seeded, index)) {
+            if (solver(seeded, index)) {
               if (token.cancelled) return;
               finishSearch(seeded, index, token);
               return;
@@ -1984,7 +2224,7 @@ window.__ModuleLoader__.load({
         if (paused || status !== 'playing' || searchRef.current) return;
         const cell = board.cells[index];
         if (cell.open || cell.flag) return;
-        if (!board.placed && settings.noGuess) {
+        if (!board.placed && noGuessMode) {
           beginSearch(index);
           return;
         }
@@ -2058,15 +2298,24 @@ window.__ModuleLoader__.load({
             h('span', null, t('safeFirst')),
             h('span', { className: 'mg-switch', 'aria-hidden': 'true' }),
           ),
-          h('button', {
-            type: 'button',
-            className: 'mg-mines-switch',
-            role: 'switch',
-            'aria-checked': settings.noGuess ? 'true' : 'false',
-            onClick: toggleNoGuess,
-          },
-            h('span', null, t('noGuess')),
-            h('span', { className: 'mg-switch', 'aria-hidden': 'true' }),
+          h('div', { className: 'mg-mines-group' },
+            h('span', { className: 'mg-mines-group-label' }, t('modeLabel')),
+            h('div', { className: 'mg-mines-chips' },
+              [
+                ['normal', 'minesModeNormal', 'minesModeNormalHint'],
+                ['dessert', 'noGuess', 'minesModeDessertHint'],
+                ['strict', 'minesModeStrict', 'minesModeStrictHint'],
+              ].map(([id, label, hint]) => h('button', {
+                key: id,
+                type: 'button',
+                className: 'mg-chip',
+                'aria-pressed': settings.mode === id ? 'true' : 'false',
+                onClick: () => chooseMode(id),
+              },
+                h('b', null, t(label)),
+                h('span', null, t(hint)),
+              )),
+            ),
           ),
           h('button', {
             type: 'button',
@@ -2080,7 +2329,8 @@ window.__ModuleLoader__.load({
         return h('div', { className: 'mg-mines' },
           h('div', { className: 'mg-mines-wait' },
             h('div', { className: 'mg-mines-spinner', 'aria-hidden': 'true' }),
-            h('div', { className: 'mg-mines-wait-title' }, t('noGuessSearching')),
+            h('div', { className: 'mg-mines-wait-title' },
+              t(settings.mode === 'strict' ? 'strictSearching' : 'noGuessSearching')),
             h('div', { className: 'mg-mines-wait-text' },
               t('noGuessAttempts') + ' ' + search.attempts + ' ' + t('noGuessTimes')
                 + ' · ' + t('noGuessSearchHint')),
@@ -2128,8 +2378,9 @@ window.__ModuleLoader__.load({
           ),
           h('span', { className: 'mg-mines-clock' }, minesClock(elapsed)),
         ),
-        settings.noGuess && board.placed && board.noGuessSkipped
-          ? h('div', { className: 'mg-mines-note' }, t('noGuessSkipped'))
+        noGuessMode && board.placed && board.noGuessSkipped
+          ? h('div', { className: 'mg-mines-note' },
+            t(settings.mode === 'strict' ? 'strictSkipped' : 'noGuessSkipped'))
           : null,
         h('div', { className: 'mg-mines-body' },
           h('div', {
