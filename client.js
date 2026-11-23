@@ -145,6 +145,8 @@ window.__ModuleLoader__.load({
       dense: '密集',
       levelMines: '雷',
       safeFirst: '首击保护',
+      noGuess: '无死局（不用猜）',
+      noGuessFailed: '这一局没找到无死局布局，已退回普通棋盘',
       start: '开始',
       newGame: '新局',
       win: '全部扫清',
@@ -304,6 +306,8 @@ window.__ModuleLoader__.load({
       dense: 'Dense',
       levelMines: 'mines',
       safeFirst: 'Safe first click',
+      noGuess: 'No-guess board',
+      noGuessFailed: 'No guess-free layout found; using a normal board',
       start: 'Start',
       newGame: 'New game',
       win: 'Board cleared',
@@ -398,7 +402,7 @@ window.__ModuleLoader__.load({
     function readMinesSettings() {
       try {
         const raw = window.localStorage.getItem(MINES_SETTINGS_KEY);
-        if (!raw) return { size: 'medium', density: 'normal', safeFirst: true };
+        if (!raw) return { size: 'medium', density: 'normal', safeFirst: true, noGuess: false };
         const parsed = JSON.parse(raw);
         const size = MINES_SIZES.some((item) => item.id === parsed.size)
           ? parsed.size
@@ -406,9 +410,9 @@ window.__ModuleLoader__.load({
         const density = MINES_DENSITIES.some((item) => item.id === parsed.density)
           ? parsed.density
           : 'normal';
-        return { size, density, safeFirst: parsed.safeFirst !== false };
+        return { size, density, safeFirst: parsed.safeFirst !== false, noGuess: parsed.noGuess === true };
       } catch (error) {
-        return { size: 'medium', density: 'normal', safeFirst: true };
+        return { size: 'medium', density: 'normal', safeFirst: true, noGuess: false };
       }
     }
 
@@ -432,6 +436,7 @@ window.__ModuleLoader__.load({
         cells,
         placed: false,
         opened: 0,
+        guessFree: true,
       };
     }
 
@@ -449,18 +454,22 @@ window.__ModuleLoader__.load({
       }
     }
 
-    /* Mines are seeded on the first reveal so the opening click can be made
-     * safe (its cell and neighbours stay clear) whatever the board size. */
-    function placeMines(board, safeIndex, safeFirst) {
-      const cells = board.cells.map((cell) => ({ ...cell }));
+    /* One random seeding pass. Mines are seeded on the first reveal so the
+     * opening click can be made safe (its cell and neighbours stay clear). */
+    function minesSeed(board, safeIndex, safeFirst) {
+      const cells = board.cells.map((cell) => ({
+        ...cell, mine: false, n: 0, open: false, flag: false,
+      }));
       const total = board.cols * board.rows;
       const forbidden = new Set();
       if (safeFirst) {
         forbidden.add(safeIndex);
         eachMinesNeighbor(board.cols, board.rows, safeIndex, (index) => forbidden.add(index));
       }
+      const available = total - forbidden.size;
+      const mines = Math.min(board.mines, Math.max(0, available));
       let placed = 0;
-      while (placed < board.mines) {
+      while (placed < mines) {
         const index = Math.floor(Math.random() * total);
         if (cells[index].mine || forbidden.has(index)) continue;
         cells[index].mine = true;
@@ -474,7 +483,112 @@ window.__ModuleLoader__.load({
         });
         cells[i].n = count;
       }
-      return { ...board, cells, placed: true };
+      return {
+        ...board, cells, mines, placed: true, opened: 0, guessFree: true,
+      };
+    }
+
+    function minesOpenState(state, board, index) {
+      const stack = [index];
+      while (stack.length > 0) {
+        const current = stack.pop();
+        const cell = board.cells[current];
+        if (cell.mine || state.open[current] || state.flag[current]) continue;
+        state.open[current] = true;
+        if (cell.n === 0) {
+          eachMinesNeighbor(board.cols, board.rows, current, (j) => {
+            if (!state.open[j] && !state.flag[j]) stack.push(j);
+          });
+        }
+      }
+    }
+
+    /* Solve with the moves a player can actually see: single-number counting
+     * plus the common subset (1-2-1 / 1-2-2-1) inference. Mine positions are
+     * never consulted, so a true result means the board needs no guessing. */
+    function minesSolvable(board, startIndex) {
+      const total = board.cols * board.rows;
+      if (board.cells[startIndex].mine) return false;
+      const state = {
+        open: new Array(total).fill(false),
+        flag: new Array(total).fill(false),
+      };
+      minesOpenState(state, board, startIndex);
+      let changed = true;
+      let guard = 0;
+      while (changed && guard < 2000) {
+        changed = false;
+        guard += 1;
+        const constraints = [];
+        for (let i = 0; i < total; i += 1) {
+          if (!state.open[i]) continue;
+          const cell = board.cells[i];
+          if (cell.n === 0) continue;
+          const unknown = [];
+          let flags = 0;
+          eachMinesNeighbor(board.cols, board.rows, i, (j) => {
+            if (state.open[j]) return;
+            if (state.flag[j]) flags += 1;
+            else unknown.push(j);
+          });
+          if (unknown.length === 0) continue;
+          const remaining = cell.n - flags;
+          if (remaining === 0) {
+            for (let k = 0; k < unknown.length; k += 1) minesOpenState(state, board, unknown[k]);
+            changed = true;
+          } else if (remaining === unknown.length) {
+            for (let k = 0; k < unknown.length; k += 1) {
+              if (!state.flag[unknown[k]]) {
+                state.flag[unknown[k]] = true;
+                changed = true;
+              }
+            }
+          } else {
+            constraints.push({ unknown, remaining });
+          }
+        }
+        for (let a = 0; a < constraints.length; a += 1) {
+          for (let b = 0; b < constraints.length; b += 1) {
+            if (a === b) continue;
+            const A = constraints[a];
+            const B = constraints[b];
+            if (A.unknown.length >= B.unknown.length) continue;
+            const setA = new Set(A.unknown);
+            if (!B.unknown.every((j) => setA.has(j))) continue;
+            const diff = B.unknown.filter((j) => !setA.has(j));
+            const rest = B.remaining - A.remaining;
+            if (rest === 0) {
+              for (let k = 0; k < diff.length; k += 1) minesOpenState(state, board, diff[k]);
+              changed = true;
+            } else if (rest === diff.length) {
+              for (let k = 0; k < diff.length; k += 1) {
+                if (!state.flag[diff[k]]) {
+                  state.flag[diff[k]] = true;
+                  changed = true;
+                }
+              }
+            }
+          }
+        }
+      }
+      for (let i = 0; i < total; i += 1) {
+        if (!board.cells[i].mine && !state.open[i]) return false;
+      }
+      return true;
+    }
+
+    function placeMines(board, safeIndex, safeFirst, noGuess) {
+      if (!noGuess) return minesSeed(board, safeIndex, safeFirst);
+      const area = board.cols * board.rows;
+      const attempts = area <= 100 ? 500 : area <= 144 ? 320 : area <= 256 ? 120 : 50;
+      let last = null;
+      for (let attempt = 0; attempt < attempts; attempt += 1) {
+        const seeded = minesSeed(board, safeIndex, true);
+        last = seeded;
+        if (minesSolvable(seeded, safeIndex)) return seeded;
+      }
+      if (last) last.guessFree = false;
+      return last || minesSeed(board, safeIndex, true);
     }
 
     function openMinesArea(board, index) {
@@ -777,6 +891,7 @@ window.__ModuleLoader__.load({
       '.mg-mines{position:absolute;inset:0;display:flex;flex-direction:column;gap:6px;padding:6px;border-radius:14px}',
       '.mg-mines-hud{flex:none;display:flex;align-items:center;justify-content:space-between;gap:8px;height:18px;font-size:11px;color:var(--dsw-alias-label-secondary);pointer-events:none}',
       '.mg-mines-hud-left{display:inline-flex;align-items:center;gap:5px}',
+      '.mg-mines-note{flex:none;padding:0 2px;font-size:10px;line-height:1.4;color:var(--dsw-alias-label-secondary)}',
       '.mg-mines-hud b{font-weight:600;color:var(--dsw-alias-label-primary);font-variant-numeric:tabular-nums}',
       '.mg-mines-clock{font-variant-numeric:tabular-nums}',
       '.mg-mines-body{flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;padding:2px}',
@@ -1291,8 +1406,8 @@ window.__ModuleLoader__.load({
     }
 
     /* ---- Go ---- */
-    const GO_N = 13;
-    const GO_KOMI = 6.5;
+    const GO_N = 19;
+    const GO_KOMI = 7.5;
 
     function goNew() {
       return new Array(GO_N * GO_N).fill(0);
@@ -1718,11 +1833,19 @@ window.__ModuleLoader__.load({
         writeMinesSettings(next);
       };
 
+      const toggleNoGuess = () => {
+        const next = { ...settings, noGuess: !settings.noGuess };
+        setSettings(next);
+        writeMinesSettings(next);
+      };
+
       const reveal = (index) => {
         if (paused || status !== 'playing') return;
         const cell = board.cells[index];
         if (cell.open || cell.flag) return;
-        const seeded = board.placed ? board : placeMines(board, index, settings.safeFirst);
+        const seeded = board.placed
+          ? board
+          : placeMines(board, index, settings.safeFirst || settings.noGuess, settings.noGuess);
         if (seeded.cells[index].mine) {
           const cells = seeded.cells.map((item) => (item.mine ? { ...item, open: true } : item));
           setBoard({ ...seeded, cells });
@@ -1792,6 +1915,16 @@ window.__ModuleLoader__.load({
           ),
           h('button', {
             type: 'button',
+            className: 'mg-mines-switch',
+            role: 'switch',
+            'aria-checked': settings.noGuess ? 'true' : 'false',
+            onClick: toggleNoGuess,
+          },
+            h('span', null, t('noGuess')),
+            h('span', { className: 'mg-switch', 'aria-hidden': 'true' }),
+          ),
+          h('button', {
+            type: 'button',
             className: 'mg-mines-start',
             onClick: startGame,
           }, t('start')),
@@ -1830,6 +1963,9 @@ window.__ModuleLoader__.load({
           ),
           h('span', { className: 'mg-mines-clock' }, minesClock(elapsed)),
         ),
+        settings.noGuess && board.placed && board.guessFree === false
+          ? h('div', { className: 'mg-mines-note' }, t('noGuessFailed'))
+          : null,
         h('div', { className: 'mg-mines-body' },
           h('div', {
             className: 'mg-mines-board',
@@ -2967,7 +3103,7 @@ window.__ModuleLoader__.load({
           stroke: '#6b4e2e', strokeWidth: 0.06, opacity: 0.55,
         }));
       }
-      [[3, 3], [9, 3], [3, 9], [9, 9], [6, 6]].forEach(([sx, sy]) => {
+      [[3, 3], [9, 3], [15, 3], [3, 9], [9, 9], [15, 9], [3, 15], [9, 15], [15, 15]].forEach(([sx, sy]) => {
         lines.push(h('circle', {
           key: 's' + sx + '-' + sy, cx: sx, cy: sy, r: 0.14, fill: '#6b4e2e', opacity: 0.65,
         }));
@@ -3016,7 +3152,7 @@ window.__ModuleLoader__.load({
           h('div', { className: 'mg-go-board' },
             h('div', { className: 'mg-go-grid', onClick: onBoardClick },
               h('svg', {
-                className: 'mg-go-lines', viewBox: '0 0 12 12',
+                className: 'mg-go-lines', viewBox: '0 0 ' + (GO_N - 1) + ' ' + (GO_N - 1),
                 preserveAspectRatio: 'none', 'aria-hidden': 'true',
               },
                 h('defs', null,
