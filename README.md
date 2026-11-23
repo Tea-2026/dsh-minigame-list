@@ -61,9 +61,7 @@
 
 | 2048 | 贪吃蛇 |
 | --- | --- |
-| ![2048](assets/2048.png) | ![snake](assets/snake.png) |
-
-![tetris](assets/tetris.png)
+| ![2048](assets/2048.png) | ![snake](assets/snake.png) | ![tetris](assets/tetris.png)
 
 ## 安装
 
