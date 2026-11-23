@@ -59,9 +59,9 @@
 | --- | --- |
 | ![菜单](assets/menu.png) | ![主题设置](assets/settings.png) |
 
-| 2048 | 贪吃蛇 |
-| --- | --- |
-| ![2048](assets/2048.png) | ![snake](assets/snake.png) | ![tetris](assets/tetris.png)
+| 2048 | 贪吃蛇 | 俄罗斯方块 |
+| --- | --- | --- |
+| ![2048](assets/2048.png) | ![snake](assets/snake.png) | ![tetris](assets/tetris.png) |
 
 ## 安装
 
