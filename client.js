@@ -152,7 +152,13 @@ window.__ModuleLoader__.load({
       noGuess: '无死局（不用猜）',
       noGuessFailed: '这一局没找到无死局布局，已退回普通棋盘',
       noGuessReduced: '无死局布局已自动降密：',
-      noGuessHint: '密集棋盘会自动降密，保证不用猜',
+      noGuessHint: '无死局模式会一直刷新布局；超过 0.3 秒可以返回或直接开始',
+      noGuessSearching: '正在寻找无死局布局',
+      noGuessAttempts: '已尝试',
+      noGuessTimes: '次',
+      noGuessSearchHint: '超过 0.3 秒可以返回或直接开始',
+      noGuessDirect: '直接开始（不找无死局）',
+      noGuessSkipped: '本局未验证无死局，直接开始了',
       start: '开始',
       newGame: '新局',
       win: '全部扫清',
@@ -319,7 +325,13 @@ window.__ModuleLoader__.load({
       noGuess: 'No-guess board',
       noGuessFailed: 'No guess-free layout found; using a normal board',
       noGuessReduced: 'No-guess layout reduced:',
-      noGuessHint: 'Dense boards are auto-reduced to stay guess-free',
+      noGuessHint: 'No-guess keeps retrying; after 0.3s you can go back or start anyway',
+      noGuessSearching: 'Looking for a guess-free layout',
+      noGuessAttempts: 'Tried',
+      noGuessTimes: 'times',
+      noGuessSearchHint: 'after 0.3s you can go back or start anyway',
+      noGuessDirect: 'Start anyway (no no-guess check)',
+      noGuessSkipped: 'Started without a no-guess check',
       start: 'Start',
       newGame: 'New game',
       win: 'Board cleared',
@@ -590,28 +602,8 @@ window.__ModuleLoader__.load({
       return true;
     }
 
-    function placeMines(board, safeIndex, safeFirst, noGuess) {
-      if (!noGuess) return minesSeed(board, safeIndex, safeFirst);
-      const area = board.cols * board.rows;
-      const attempts = area <= 100 ? 300 : area <= 144 ? 200 : area <= 256 ? 80 : 40;
-      const base = board.mines;
-      const steps = [1, 0.85, 0.7, 0.55, 0.4];
-      let last = null;
-      for (let step = 0; step < steps.length; step += 1) {
-        const target = Math.max(1, Math.round(base * steps[step]));
-        for (let attempt = 0; attempt < attempts; attempt += 1) {
-          const seeded = minesSeed(board, safeIndex, true, target);
-          last = seeded;
-          if (minesSolvable(seeded, safeIndex)) {
-            seeded.guessFree = true;
-            seeded.noGuessReduced = target < base;
-            seeded.noGuessOriginal = base;
-            return seeded;
-          }
-        }
-      }
-      if (last) last.guessFree = false;
-      return last || minesSeed(board, safeIndex, true, base);
+    function placeMines(board, safeIndex, safeFirst) {
+      return minesSeed(board, safeIndex, safeFirst);
     }
 
     function openMinesArea(board, index) {
@@ -915,6 +907,12 @@ window.__ModuleLoader__.load({
       '.mg-mines-hud{flex:none;display:flex;align-items:center;justify-content:space-between;gap:8px;height:18px;font-size:11px;color:var(--dsw-alias-label-secondary);pointer-events:none}',
       '.mg-mines-hud-left{display:inline-flex;align-items:center;gap:5px}',
       '.mg-mines-note{flex:none;padding:0 2px;font-size:10px;line-height:1.4;color:var(--dsw-alias-label-secondary)}',
+      '.mg-mines-wait{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:18px;text-align:center;border-radius:14px;background:var(--dsw-alias-bg-base,#fff)}',
+      '.mg-mines-spinner{width:26px;height:26px;border-radius:50%;border:2px solid #e6e8ec;border-top-color:#0f1115;animation:mg-mines-spin .8s linear infinite}',
+      '@keyframes mg-mines-spin{to{transform:rotate(360deg)}}',
+      '.mg-mines-wait-title{font-size:14px;font-weight:600}',
+      '.mg-mines-wait-text{max-width:290px;font-size:11px;line-height:1.5;color:var(--dsw-alias-label-secondary)}',
+      '.mg-mines-wait-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:4px}',
       '.mg-mines-hud b{font-weight:600;color:var(--dsw-alias-label-primary);font-variant-numeric:tabular-nums}',
       '.mg-mines-clock{font-variant-numeric:tabular-nums}',
       '.mg-mines-body{flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;padding:2px}',
@@ -1111,7 +1109,7 @@ window.__ModuleLoader__.load({
       '.mg-heart[data-lost="true"]{opacity:.35;color:#cbd5e1}',
       '.mg-breakout-lostheart{position:absolute;top:0;width:16px;height:16px;color:#e11d48;fill:currentColor;pointer-events:none;animation:mg-breakout-heart-fall 1.1s linear forwards}',
       '@keyframes mg-breakout-heart-fall{0%{opacity:1;transform:translateY(0) rotate(0deg)}15%{transform:translateY(-18px) rotate(-40deg)}30%{transform:translateY(-12px) rotate(10deg)}45%{transform:translateY(12px) rotate(80deg)}60%{transform:translateY(52px) rotate(150deg)}75%{transform:translateY(112px) rotate(220deg)}88%{opacity:1;transform:translateY(188px) rotate(280deg)}100%{opacity:0;transform:translateY(280px) rotate(340deg)}}',
-      '@media (prefers-reduced-motion:reduce){.mg-panel,.mg-dock,.mg-view,.mg-card,.mg-console,.mg-launch,.mg-cbtn,.mg-caction,.mg-close,.mg-cell{transition:none}.mg-dot{animation:none}.mg-panel[data-shown="true"] .mg-card,.mg-panel[data-shown="true"] .mg-kicker-rule{animation:none}.mg-eng-progress span,.mg-eng-skeleton{animation:none}.mg-gomoku-stone[data-last="true"],.mg-go-stone[data-last="true"],.mg-xq-piece[data-last="true"],.mg-gomoku-over{animation:none}.mg-stone-core,.mg-stone-ring{animation:none}.mg-xq-sel-halo,.mg-xq-sel-ring,.mg-xq-capture-ring,.mg-xq-dot-halo{animation:none}.mg-xq-disc-body{animation:none;transition:none}.mg-gomoku-stone[data-last="true"]::after,.mg-go-stone[data-last="true"]::after{animation:none;content:none}}',
+      '@media (prefers-reduced-motion:reduce){.mg-panel,.mg-dock,.mg-view,.mg-card,.mg-console,.mg-launch,.mg-cbtn,.mg-caction,.mg-close,.mg-cell{transition:none}.mg-dot{animation:none}.mg-panel[data-shown="true"] .mg-card,.mg-panel[data-shown="true"] .mg-kicker-rule{animation:none}.mg-eng-progress span,.mg-eng-skeleton{animation:none}.mg-gomoku-stone[data-last="true"],.mg-go-stone[data-last="true"],.mg-xq-piece[data-last="true"],.mg-gomoku-over{animation:none}.mg-stone-core,.mg-stone-ring{animation:none}.mg-mines-spinner{animation:none}.mg-xq-sel-halo,.mg-xq-sel-ring,.mg-xq-capture-ring,.mg-xq-dot-halo{animation:none}.mg-xq-disc-body{animation:none;transition:none}.mg-gomoku-stone[data-last="true"]::after,.mg-go-stone[data-last="true"]::after{animation:none;content:none}}',
     ].join('');
 
     /* Shelf entries. `w`/`h` are the frame the menu morphs into; `extra` is the
@@ -1446,23 +1444,40 @@ window.__ModuleLoader__.load({
     /* ---- Go ---- */
     const GO_N = 19;
     const GO_KOMI = 7.5;
+    const GO_SIZES = [
+      { id: 'standard', n: 13 },
+      { id: 'go', n: 19 },
+      { id: 'mini', n: 9 },
+    ];
+    const GO_KOMI_BY_SIZE = { 9: 5.5, 13: 6.5, 19: 7.5 };
 
-    function goNew() {
-      return new Array(GO_N * GO_N).fill(0);
+    function goSize(id) {
+      for (let i = 0; i < GO_SIZES.length; i += 1) {
+        if (GO_SIZES[i].id === id) return GO_SIZES[i];
+      }
+      return GO_SIZES[1];
     }
 
-    function goNeighbors(index) {
-      const x = index % GO_N;
-      const y = Math.floor(index / GO_N);
+    function goKomi(n) {
+      return GO_KOMI_BY_SIZE[n] || GO_KOMI;
+    }
+
+    function goNew(n = GO_N) {
+      return new Array(n * n).fill(0);
+    }
+
+    function goNeighbors(index, n = GO_N) {
+      const x = index % n;
+      const y = Math.floor(index / n);
       const out = [];
       if (x > 0) out.push(index - 1);
-      if (x < GO_N - 1) out.push(index + 1);
-      if (y > 0) out.push(index - GO_N);
-      if (y < GO_N - 1) out.push(index + GO_N);
+      if (x < n - 1) out.push(index + 1);
+      if (y > 0) out.push(index - n);
+      if (y < n - 1) out.push(index + n);
       return out;
     }
 
-    function goGroup(board, index) {
+    function goGroup(board, index, n = GO_N) {
       const color = board[index];
       const seen = new Set([index]);
       const stack = [index];
@@ -1471,7 +1486,7 @@ window.__ModuleLoader__.load({
       while (stack.length > 0) {
         const current = stack.pop();
         stones.push(current);
-        const neighbors = goNeighbors(current);
+        const neighbors = goNeighbors(current, n);
         for (let i = 0; i < neighbors.length; i += 1) {
           const next = neighbors[i];
           const value = board[next];
@@ -1485,27 +1500,27 @@ window.__ModuleLoader__.load({
       return { stones, liberties };
     }
 
-    function goTryMove(board, index, color) {
+    function goTryMove(board, index, color, n = GO_N) {
       if (board[index] !== 0) return null;
       const next = board.slice();
       next[index] = color;
       let captured = 0;
       const enemy = 3 - color;
-      goNeighbors(index).forEach((neighbor) => {
+      goNeighbors(index, n).forEach((neighbor) => {
         if (next[neighbor] !== enemy) return;
-        const group = goGroup(next, neighbor);
+        const group = goGroup(next, neighbor, n);
         if (group.liberties > 0) return;
         group.stones.forEach((stone) => {
           next[stone] = 0;
           captured += 1;
         });
       });
-      const own = goGroup(next, index);
+      const own = goGroup(next, index, n);
       if (own.liberties === 0) return null;
       return { board: next, captured };
     }
 
-    function goScore(board) {
+    function goScore(board, n = GO_N) {
       let black = 0;
       let white = 0;
       for (let i = 0; i < board.length; i += 1) {
@@ -1522,7 +1537,7 @@ window.__ModuleLoader__.load({
         while (stack.length > 0) {
           const current = stack.pop();
           region.push(current);
-          goNeighbors(current).forEach((next) => {
+          goNeighbors(current, n).forEach((next) => {
             if (board[next] === 0) {
               if (!visited[next]) {
                 visited[next] = true;
@@ -1816,6 +1831,8 @@ window.__ModuleLoader__.load({
       const [status, setStatus] = useState('setup');
       const [elapsed, setElapsed] = useState(0);
       const lastExtra = useRef(restartTick);
+      const [search, setSearch] = useState(null);
+      const searchRef = useRef(null);
 
       const size = minesSize(settings.size);
       const density = minesDensity(settings.density);
@@ -1828,6 +1845,12 @@ window.__ModuleLoader__.load({
       }, [settings.size, onFrame]);
 
       const startGame = useCallback(() => {
+        if (searchRef.current) {
+          searchRef.current.cancelled = true;
+          window.clearTimeout(searchRef.current.timer);
+          searchRef.current = null;
+        }
+        setSearch(null);
         const nextSize = minesSize(settings.size);
         const nextDensity = minesDensity(settings.density);
         setBoard(makeMinesBoard({
@@ -1877,13 +1900,92 @@ window.__ModuleLoader__.load({
         writeMinesSettings(next);
       };
 
+      const finishSearch = (seeded, index, token) => {
+        if (token !== searchRef.current) return;
+        token.cancelled = true;
+        window.clearTimeout(token.timer);
+        searchRef.current = null;
+        setSearch(null);
+        const result = openMinesArea(seeded, index);
+        setBoard(result.board);
+        setStatus(result.won ? 'won' : 'playing');
+      };
+
+      const beginSearch = (index) => {
+        if (searchRef.current) return;
+        const token = { index, cancelled: false, attempts: 0, timer: 0, waiting: false };
+        searchRef.current = token;
+        setSearch({ index, attempts: 0, waiting: false });
+        token.timer = window.setTimeout(() => {
+          if (token.cancelled) return;
+          token.waiting = true;
+          setSearch({ index, attempts: token.attempts, waiting: true });
+        }, 300);
+        const loop = async () => {
+          while (!token.cancelled) {
+            const seeded = minesSeed(board, index, true);
+            token.attempts += 1;
+            if (minesSolvable(seeded, index)) {
+              if (token.cancelled) return;
+              finishSearch(seeded, index, token);
+              return;
+            }
+            if (token.waiting && token.attempts % 50 === 0) {
+              setSearch({ index, attempts: token.attempts, waiting: true });
+            }
+            if (token.attempts % 8 === 0) {
+              await new Promise((resolve) => { window.setTimeout(resolve, 0); });
+            }
+          }
+        };
+        loop();
+      };
+
+      const cancelSearch = () => {
+        const token = searchRef.current;
+        if (token) {
+          token.cancelled = true;
+          window.clearTimeout(token.timer);
+          searchRef.current = null;
+        }
+        setSearch(null);
+        setStatus('setup');
+      };
+
+      const startAnyway = () => {
+        const token = searchRef.current;
+        if (!token) return;
+        token.cancelled = true;
+        window.clearTimeout(token.timer);
+        searchRef.current = null;
+        setSearch(null);
+        const seeded = minesSeed(board, token.index, true);
+        seeded.guessFree = false;
+        seeded.noGuessSkipped = true;
+        const result = openMinesArea(seeded, token.index);
+        setBoard(result.board);
+        setStatus(result.won ? 'won' : 'playing');
+      };
+
+      useEffect(() => () => {
+        const token = searchRef.current;
+        if (token) {
+          token.cancelled = true;
+          window.clearTimeout(token.timer);
+        }
+      }, []);
+
       const reveal = (index) => {
-        if (paused || status !== 'playing') return;
+        if (paused || status !== 'playing' || searchRef.current) return;
         const cell = board.cells[index];
         if (cell.open || cell.flag) return;
+        if (!board.placed && settings.noGuess) {
+          beginSearch(index);
+          return;
+        }
         const seeded = board.placed
           ? board
-          : placeMines(board, index, settings.safeFirst || settings.noGuess, settings.noGuess);
+          : placeMines(board, index, settings.safeFirst);
         if (seeded.cells[index].mine) {
           const cells = seeded.cells.map((item) => (item.mine ? { ...item, open: true } : item));
           setBoard({ ...seeded, cells });
@@ -1896,7 +1998,7 @@ window.__ModuleLoader__.load({
       };
 
       const toggleFlag = (index) => {
-        if (paused || status !== 'playing') return;
+        if (paused || status !== 'playing' || searchRef.current) return;
         const cell = board.cells[index];
         if (cell.open) return;
         const cells = board.cells.slice();
@@ -1970,6 +2072,26 @@ window.__ModuleLoader__.load({
         );
       }
 
+      if (search && search.waiting) {
+        return h('div', { className: 'mg-mines' },
+          h('div', { className: 'mg-mines-wait' },
+            h('div', { className: 'mg-mines-spinner', 'aria-hidden': 'true' }),
+            h('div', { className: 'mg-mines-wait-title' }, t('noGuessSearching')),
+            h('div', { className: 'mg-mines-wait-text' },
+              t('noGuessAttempts') + ' ' + search.attempts + ' ' + t('noGuessTimes')
+                + ' · ' + t('noGuessSearchHint')),
+            h('div', { className: 'mg-mines-wait-actions' },
+              h('button', {
+                type: 'button', className: 'mg-mines-btn mg-mines-btn-ghost', onClick: cancelSearch,
+              }, t('back')),
+              h('button', {
+                type: 'button', className: 'mg-mines-btn', onClick: startAnyway,
+              }, t('noGuessDirect')),
+            ),
+          ),
+        );
+      }
+
       const flags = board.cells.reduce((count, cell) => count + (cell.flag ? 1 : 0), 0);
       const cells = [];
       for (let i = 0; i < board.cells.length; i += 1) {
@@ -2002,12 +2124,9 @@ window.__ModuleLoader__.load({
           ),
           h('span', { className: 'mg-mines-clock' }, minesClock(elapsed)),
         ),
-        settings.noGuess && board.placed && board.guessFree === false
-          ? h('div', { className: 'mg-mines-note' }, t('noGuessFailed'))
-          : settings.noGuess && board.placed && board.noGuessReduced
-            ? h('div', { className: 'mg-mines-note' },
-              t('noGuessReduced') + board.mines + ' / ' + board.noGuessOriginal + ' ' + t('levelMines'))
-            : null,
+        settings.noGuess && board.placed && board.noGuessSkipped
+          ? h('div', { className: 'mg-mines-note' }, t('noGuessSkipped'))
+          : null,
         h('div', { className: 'mg-mines-body' },
           h('div', {
             className: 'mg-mines-board',
@@ -2037,7 +2156,7 @@ window.__ModuleLoader__.load({
     function GomokuGame(props) {
       const { t, paused, restartTick, undoTick } = props;
       const [settings, setSettings] = useState(readGomokuSettings);
-      const n = gomokuSize(settings.size).n;
+      const n = GOMOKU_N;
       const [board, setBoard] = useState(() => gomokuNew(n));
       const [status, setStatus] = useState('setup');
       const [turn, setTurn] = useState(1);
@@ -2207,21 +2326,6 @@ window.__ModuleLoader__.load({
               ),
             ),
           ),
-          h('div', { className: 'mg-mines-group' },
-            h('span', { className: 'mg-mines-group-label' }, t('boardSize')),
-            h('div', { className: 'mg-mines-chips' },
-              GOMOKU_SIZES.map((item) => h('button', {
-                key: item.id,
-                type: 'button',
-                className: 'mg-chip',
-                'aria-pressed': settings.size === item.id ? 'true' : 'false',
-                onClick: () => save({ size: item.id }),
-              },
-                h('b', null, t(item.id === 'go' ? 'sizeGo' : item.id === 'mini' ? 'sizeMini' : 'sizeStandard')),
-                h('span', null, item.n + '×' + item.n),
-              )),
-            ),
-          ),
           ai
             ? h('div', { className: 'mg-mines-group' },
               h('span', { className: 'mg-mines-group-label' }, t('difficultyLabel')),
@@ -2353,15 +2457,17 @@ window.__ModuleLoader__.load({
     function readBoardSettings(key) {
       try {
         const raw = window.localStorage.getItem(key);
-        if (!raw) return { mode: 'solo', difficulty: 'normal', installed: false, size: 'standard' };
+        if (!raw) return { mode: 'solo', difficulty: 'normal', installed: false, size: 'go' };
         const parsed = JSON.parse(raw);
+        const size = parsed.size === 'standard' || parsed.size === 'mini' ? parsed.size : 'go';
         return {
           mode: parsed.mode === 'ai' ? 'ai' : 'solo',
           difficulty: parsed.difficulty === 'easy' || parsed.difficulty === 'hard' ? parsed.difficulty : 'normal',
           installed: parsed.installed === true,
+          size,
         };
       } catch (error) {
-        return { mode: 'solo', difficulty: 'normal', installed: false, size: 'standard' };
+        return { mode: 'solo', difficulty: 'normal', installed: false, size: 'go' };
       }
     }
 
@@ -2378,6 +2484,7 @@ window.__ModuleLoader__.load({
         t, title, hint, settings, onChange, onStart,
       } = props;
       const ai = settings.mode === 'ai';
+      const sizes = props.sizes || null;
       const chips = (items) => h('div', { className: 'mg-mines-chips' },
         items.map((item) => h('button', {
           key: item.id,
@@ -2405,6 +2512,16 @@ window.__ModuleLoader__.load({
             },
           ]),
         ),
+        sizes ? h('div', { className: 'mg-mines-group' },
+          h('span', { className: 'mg-mines-group-label' }, t('boardSize')),
+          chips(sizes.map((item) => ({
+            id: item.id,
+            title: t(item.id === 'go' ? 'sizeGo' : item.id === 'mini' ? 'sizeMini' : 'sizeStandard'),
+            subtitle: item.n + '\u00d7' + item.n,
+            active: props.size === item.id,
+            onClick: () => props.onSize(item.id),
+          }))),
+        ) : null,
         ai ? h('div', { className: 'mg-mines-group' },
           h('span', { className: 'mg-mines-group-label' }, t('difficultyLabel')),
           chips([
@@ -2929,11 +3046,11 @@ window.__ModuleLoader__.load({
 
     const GO_SETTINGS_KEY = 'dsh-minigame-list.go.settings';
 
-    function goLegalMoves(board, color, ko) {
+    function goLegalMoves(board, color, ko, n = GO_N) {
       const out = [];
       for (let i = 0; i < board.length; i += 1) {
         if (board[i] !== 0) continue;
-        const result = goTryMove(board, i, color);
+        const result = goTryMove(board, i, color, n);
         if (!result) continue;
         if (result.board.join('') === ko) continue;
         out.push({ index: i, result });
@@ -2943,23 +3060,23 @@ window.__ModuleLoader__.load({
 
     /* Shallow heuristic: captures, rescuing own groups in atari, pressing enemy
      * groups, proximity, and a penalty for filling its own eye. */
-    function goAiMove(board, color, ko, difficulty) {
-      const moves = goLegalMoves(board, color, ko);
+    function goAiMove(board, color, ko, difficulty, n = GO_N) {
+      const moves = goLegalMoves(board, color, ko, n);
       if (moves.length === 0) return null;
       const enemy = 3 - color;
       const scored = moves.map((move) => {
         let score = move.result.captured * 30;
-        const neighbors = goNeighbors(move.index);
+        const neighbors = goNeighbors(move.index, n);
         let adjacent = 0;
         let ownEye = neighbors.length > 0;
-        neighbors.forEach((n) => {
-          if (board[n] !== 0) adjacent += 1;
-          if (board[n] !== color) ownEye = false;
-          if (board[n] === color) {
-            const group = goGroup(board, n);
+        neighbors.forEach((nb) => {
+          if (board[nb] !== 0) adjacent += 1;
+          if (board[nb] !== color) ownEye = false;
+          if (board[nb] === color) {
+            const group = goGroup(board, nb, n);
             if (group.liberties === 1 && group.stones.length > 1) score += 20;
-          } else if (board[n] === enemy) {
-            const group = goGroup(board, n);
+          } else if (board[nb] === enemy) {
+            const group = goGroup(board, nb, n);
             if (group.liberties === 1) score += 12;
           }
         });
@@ -2979,19 +3096,21 @@ window.__ModuleLoader__.load({
       return scored[0].move.index;
     }
 
-    function goGtpIndex(move) {
+    function goGtpIndex(move, n = GO_N) {
       const match = /^([A-HJ-T])(\d+)$/.exec(String(move || '').trim().toUpperCase());
       if (!match) return null;
       const x = 'ABCDEFGHJKLMNOPQRST'.indexOf(match[1]);
       const row = Number(match[2]);
-      if (x < 0 || x >= GO_N || row < 1 || row > GO_N) return null;
-      return (GO_N - row) * GO_N + x;
+      if (x < 0 || x >= n || row < 1 || row > n) return null;
+      return (n - row) * n + x;
     }
 
     function GoGame(props) {
       const { t, paused, extraTick, restartTick, undoTick } = props;
       const [settings, setSettings] = useState(() => readBoardSettings(GO_SETTINGS_KEY));
-      const [board, setBoard] = useState(goNew);
+      const n = goSize(settings.size).n;
+      const komi = goKomi(n);
+      const [board, setBoard] = useState(() => goNew(n));
       const [turn, setTurn] = useState(1);
       const [captured, setCaptured] = useState({ 1: 0, 2: 0 });
       const [passed, setPassed] = useState(0);
@@ -3010,7 +3129,7 @@ window.__ModuleLoader__.load({
       };
 
       const startGame = useCallback(() => {
-        setBoard(goNew());
+        setBoard(goNew(n));
         setTurn(1);
         setCaptured({ 1: 0, 2: 0 });
         setPassed(0);
@@ -3019,7 +3138,7 @@ window.__ModuleLoader__.load({
         setLastMove(-1);
         setStatus('playing');
         historyRef.current = [];
-      }, []);
+      }, [n]);
 
       const lastRestart = useRef(restartTick);
       useEffect(() => {
@@ -3053,13 +3172,13 @@ window.__ModuleLoader__.load({
         const next = passed + 1;
         setKo('');
         if (next >= 2) {
-          setScore(goScore(board));
+          setScore(goScore(board, n));
           setStatus('over');
           return;
         }
         setPassed(next);
         setTurn(3 - turn);
-      }, [paused, status, passed, board, turn, captured, ko, score, lastMove]);
+      }, [paused, status, passed, board, turn, captured, ko, score, lastMove, n]);
 
       const passRef = useRef(doPass);
       passRef.current = doPass;
@@ -3077,23 +3196,23 @@ window.__ModuleLoader__.load({
         const id = window.setTimeout(async () => {
           const stones = [];
           for (let i = 0; i < board.length; i += 1) {
-            if (board[i]) stones.push([i % GO_N, Math.floor(i / GO_N), board[i]]);
+            if (board[i]) stones.push([i % n, Math.floor(i / n), board[i]]);
           }
           const reply = await mgEngineMove('go', {
-            size: GO_N, komi: GO_KOMI, color: 2, stones, level: settings.difficulty,
+            size: n, komi, color: 2, stones, level: settings.difficulty,
           }, 30000);
           if (dead) return;
           if (String(reply || '').trim().toLowerCase() === 'pass') {
             doPass();
             return;
           }
-          let index = goGtpIndex(reply);
-          if (index === null) index = goAiMove(board, 2, ko, settings.difficulty);
+          let index = goGtpIndex(reply, n);
+          if (index === null) index = goAiMove(board, 2, ko, settings.difficulty, n);
           if (index === null) {
             doPass();
             return;
           }
-          const result = goTryMove(board, index, 2);
+          const result = goTryMove(board, index, 2, n);
           if (!result) {
             doPass();
             return;
@@ -3104,7 +3223,7 @@ window.__ModuleLoader__.load({
           dead = true;
           window.clearTimeout(id);
         };
-      }, [settings.mode, settings.difficulty, status, turn, paused, board, ko, doPass, commit]);
+      }, [settings.mode, settings.difficulty, status, turn, paused, board, ko, doPass, commit, n]);
 
       useEffect(() => {
         if (undoTick === lastUndo.current) return;
@@ -3130,7 +3249,7 @@ window.__ModuleLoader__.load({
       const place = (index) => {
         if (paused || status !== 'playing') return;
         if (settings.mode === 'ai' && turn !== 1) return;
-        const result = goTryMove(board, index, turn);
+        const result = goTryMove(board, index, turn, n);
         if (!result) return;
         if (result.board.join('') === ko) return;
         commit(result, index);
@@ -3139,25 +3258,26 @@ window.__ModuleLoader__.load({
       const onBoardClick = (event) => {
         if (paused || status !== 'playing') return;
         const rect = event.currentTarget.getBoundingClientRect();
-        const stepX = rect.width / (GO_N - 1);
-        const stepY = rect.height / (GO_N - 1);
+        const stepX = rect.width / (n - 1);
+        const stepY = rect.height / (n - 1);
         const x = Math.round((event.clientX - rect.left) / stepX);
         const y = Math.round((event.clientY - rect.top) / stepY);
-        if (x < 0 || x >= GO_N || y < 0 || y >= GO_N) return;
-        place(y * GO_N + x);
+        if (x < 0 || x >= n || y < 0 || y >= n) return;
+        place(y * n + x);
       };
 
       if (status === 'setup') {
         return h(GameSetup, {
           t, title: t('go'), hint: t('gomokuHint'), settings, onChange: save, onStart: startGame,
+          sizes: GO_SIZES, size: settings.size, onSize: (id) => save({ size: id }),
         });
       }
 
       const lines = [];
       const edge = 0.03;
-      const inner = GO_N - 1 - edge;
-      for (let i = 0; i < GO_N; i += 1) {
-        const p = i === 0 ? edge : (i === GO_N - 1 ? inner : i);
+      const inner = n - 1 - edge;
+      for (let i = 0; i < n; i += 1) {
+        const p = i === 0 ? edge : (i === n - 1 ? inner : i);
         lines.push(h('line', {
           key: 'v' + i, x1: p, y1: edge, x2: p, y2: inner,
           stroke: '#6b4e2e', strokeWidth: 0.06, opacity: 0.55,
@@ -3167,7 +3287,12 @@ window.__ModuleLoader__.load({
           stroke: '#6b4e2e', strokeWidth: 0.06, opacity: 0.55,
         }));
       }
-      [[3, 3], [9, 3], [15, 3], [3, 9], [9, 9], [15, 9], [3, 15], [9, 15], [15, 15]].forEach(([sx, sy]) => {
+      const stars = n === 19
+        ? [[3, 3], [9, 3], [15, 3], [3, 9], [9, 9], [15, 9], [3, 15], [9, 15], [15, 15]]
+        : n === 13
+          ? [[3, 3], [9, 3], [3, 9], [9, 9], [6, 6]]
+          : [[2, 2], [6, 2], [2, 6], [6, 6], [4, 4]];
+      stars.forEach(([sx, sy]) => {
         lines.push(h('circle', {
           key: 's' + sx + '-' + sy, cx: sx, cy: sy, r: 0.14, fill: '#6b4e2e', opacity: 0.65,
         }));
@@ -3176,8 +3301,8 @@ window.__ModuleLoader__.load({
       const stoneMarks = [];
       for (let i = 0; i < board.length; i += 1) {
         if (board[i] === 0) continue;
-        const cx = i % GO_N;
-        const cy = Math.floor(i / GO_N);
+        const cx = i % n;
+        const cy = Math.floor(i / n);
         stoneMarks.push(h('g', {
           key: 's' + i, className: 'mg-stone-svg', 'data-last': i === lastMove ? 'true' : 'false',
         },
@@ -3199,7 +3324,7 @@ window.__ModuleLoader__.load({
       }
 
       const blackArea = score ? score.black : 0;
-      const whiteArea = score ? score.white + GO_KOMI : 0;
+      const whiteArea = score ? score.white + komi : 0;
       const resultText = !score ? '' : blackArea > whiteArea
         ? t('black') + ' ' + t('wins')
         : whiteArea > blackArea ? t('white') + ' ' + t('wins') : t('drawGame');
@@ -3216,7 +3341,7 @@ window.__ModuleLoader__.load({
           h('div', { className: 'mg-go-board' },
             h('div', { className: 'mg-go-grid', onClick: onBoardClick },
               h('svg', {
-                className: 'mg-go-lines', viewBox: '0 0 ' + (GO_N - 1) + ' ' + (GO_N - 1),
+                className: 'mg-go-lines', viewBox: '0 0 ' + (n - 1) + ' ' + (n - 1),
                 preserveAspectRatio: 'none', 'aria-hidden': 'true',
               },
                 h('defs', null,
@@ -3237,7 +3362,7 @@ window.__ModuleLoader__.load({
             h('div', { className: 'mg-gomoku-over-title' }, resultText),
             h('div', { className: 'mg-gomoku-over-meta' },
               t('black') + ' ' + blackArea + ' · ' + t('white') + ' ' + whiteArea.toFixed(1)
-                + ' (' + t('komi') + ' ' + GO_KOMI + ')'),
+                + ' (' + t('komi') + ' ' + komi + ')'),
             h('div', { className: 'mg-gomoku-over-actions' },
               h('button', {
                 type: 'button', className: 'mg-mines-btn', onClick: startGame,
